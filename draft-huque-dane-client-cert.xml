@@ -190,19 +190,18 @@
     <section title="Signalling the Client's DANE Identity">
       <t>
 	The protocol described in the initial version of this document
-	assumes that client certificate authentication is mandatory.
-	In this scenario, the server can unconditionally send a
-	Client Certificate Request message in the TLS handshake, and 
-	extract the client's identity from the presented certificate. 
-	However in applications that need to support optional client
-	certificate authentication, additional complications may 
-	arise.
-	The TLS protocol specification states that the client may
-	respond with a Client Certificate message with no certificate,
-	and that the server in that case may at its discretion
-	continue the handshake without client authentication. However
-	in practice software interoperability issues sometimes
-	arise. [Reference from SMTP implementations?].
+	assumes either that client authentication is mandatory, or that 
+	where it is optional, clients can handle a Client Certificate 
+	Request message from the server without issues if they are not 
+	equipped with client certificates. Technically, the TLS protocol 
+	specification states the client may respond with a Client 
+	Certificate message with no certificate, and that the server may 
+	at its discretion continue the handshake without client 
+	authentication. However in practice, problems often arise. There
+	are deployed client software implementations that do not react 
+	properly when  encountering a certificate request that they did 
+	not expect. 
+	[Insert Reference from SMTP implementations?].
       </t>
       <t>
 	Furthermore, a server may want an explicit indication from 
@@ -298,11 +297,10 @@ _client.device1.example.com. IN TLSA (
 	  "_client" to the client name.</t>
 
 	  <t>Look up the TLSA record in the DNS. The response MUST be
-	  cryptographically validated using DNSSEC. Ideally, the
-	  server should perform the DNSSEC validation itself, but it
-	  may be acceptable for a server to be configured to trust 
-	  responses obtained via an external validating resolver to 
-	  which it has a secure connection.</t>
+	  cryptographically validated using DNSSEC. The server could
+	  perform the DNSSEC validation itself. It could also be
+	  configured to trust responses obtained via a validating 
+	  resolver to which it has a secure connection.</t>
 
 	  <t>Extract the RDATA of the TLSA record and match it to the
 	  presented client certificate according to the rules specified
@@ -322,10 +320,10 @@ _client.device1.example.com. IN TLSA (
 	Specific applications may be designed to require more detailed 
 	validation steps. For example, a server might want to verify the 
 	client's IP address is associated with the certificate in some 
-	manner, eg. by confirming that a secure reverse DNS lookup of 
+	manner, e.g. by confirming that a secure reverse DNS lookup of 
 	that address ties it back to the same domain name, or by requiring 
 	an iPAddress component to be included in the certificate. Such
-	details are outside of the scope of this document, and should be
+	details are outside the scope of this document, and should be
 	outlined in other application specific documents.
       </t>
 
@@ -369,12 +367,12 @@ _client.device1.example.com. IN TLSA (
       <t>
 	Should this document also consider client identities in the form
 	of e-mail addresses? The use case might be an SMTP client talking
-	to an SMTP submission server. In that case, the email address would
-	most likely be conveyed in the certificate in a subject alt name
-	rfc822Name type. The corresponding TLSA record would have to then
-	have an owner name format similar to the OPENPGPKEY or SMIMEA
-	records. Or perhaps those specifications should consider this use
-	case instead.
+	to an SMTP submission server. In that case, the email address of a
+	user would most likely be conveyed in the certificate in a subject 
+	alt name rfc822Name type. The corresponding TLSA record would have 
+	to then have an owner name format similar to the OPENPGPKEY or SMIMEA
+	records. This use case might be best left to the SMIMEA specification 
+	to consider.
       </t>
     </section>
 
