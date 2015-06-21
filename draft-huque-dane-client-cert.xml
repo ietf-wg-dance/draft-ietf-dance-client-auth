@@ -286,7 +286,10 @@ _client.device1.example.com. IN TLSA (
 	  "Client Certificate Request" message).</t>
 
 	  <t>Extract the client identity from the Subject Alternative
-	  Name extension's dNSName type in the client certificate.</t>
+	  Name extension's dNSName type in the client certificate.
+	  (If no client certificate is provided, then the server may
+	  terminate the connection, or at its discretion may continue 
+	  the handshake without client authentication.)</t>
 
 	  <t>Construct the DNS query name for the corresponding TLSA
 	  record, by prepending the _0 and transport labels to the
@@ -378,8 +381,8 @@ _client.device1.example.com. IN TLSA (
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t>
 	This document benefited from discussions with the following 
-	people: Duane Wessels, Allison Mankin, Casey Deccio, Warren 
-	Kumari, and Viktor Dukhovni.
+	people: Viktor Dukhovni, Duane Wessels, Allison Mankin, 
+	Casey Deccio, and Warren Kumari.
       </t>
     </section>
 
