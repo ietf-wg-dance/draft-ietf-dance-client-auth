@@ -171,16 +171,6 @@
     </section>
 
 
-    <section title="Signalling the Client's DANE Identity">
-      <t>
-	The protocol described in the initial version of this document
-	assumes that client certificate authentication is mandatory.
-	However in applications that need to support optional client
-	certificate authentication, additional complications arise.
-	[Describe them and propose possible solutions].
-      </t>
-    </section>
-
     <section title="Authentication Model">
       <t>
 	The authentication model assumed in this document is the following:
@@ -193,6 +183,42 @@
 	directly via the DNS (using the DANE-TA or DANE-EE usage modes) or 
 	via a PKIX public CA system constraint (using the PKIX-TA or
 	PKIX-EE usage modes).
+      </t>
+    </section>
+
+
+    <section title="Signalling the Client's DANE Identity">
+      <t>
+	The protocol described in the initial version of this document
+	assumes that client certificate authentication is mandatory.
+	In this scenario, the server can unconditionally send a
+	Client Certificate Request message in the TLS handshake, and 
+	extract the client's identity from the presented certificate. 
+	However in applications that need to support optional client
+	certificate authentication, additional complications may 
+	arise.
+	The TLS protocol specification states that the client may
+	respond with a Client Certificate message with no certificate,
+	and that the server in that case may at its discretion
+	continue the handshake without client authentication. However
+	in practice software interoperability issues sometimes
+	arise. [Reference from SMTP implementations?].
+      </t>
+      <t>
+	Furthermore, a server may want an explicit indication from 
+	the client that it has a DANE record, so as to avoid 
+	unnecessary DNS queries in-band with the TLS handshake for
+	clients that don't support this.
+      </t>
+      <t>
+	Hence, to address this problem most generally, a client 
+	identity signalling solution will need to be devised, whereby
+	the client indicates its DANE identity (i.e. its domain
+	name identity and the fact that this identity has an
+	associated DANE record) to the server. Application specific
+	protocol enhancements would be one way to achieve this, e.g.
+	a new SMTP command. A more general way would be to develop
+	a new TLS extension to convey this information.
       </t>
     </section>
 
@@ -386,6 +412,13 @@ _client.device1.example.com. IN TLSA (
 
     <references title="Informative References">
       &RFC3552;
+      <reference anchor="SRVREG"
+        target="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.txt">
+	<front>
+          <title>Service Name and Transport Protocol Port Number Registry</title>
+          <author fullname="IANA" surname="IANA" />
+	</front>
+      </reference>
     </references>
   </back>
 
