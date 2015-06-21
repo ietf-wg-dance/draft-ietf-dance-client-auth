@@ -171,6 +171,16 @@
     </section>
 
 
+    <section title="Signalling the Client's DANE Identity">
+      <t>
+	The protocol described in the initial version of this document
+	assumes that client certificate authentication is mandatory.
+	However in applications that need to support optional client
+	certificate authentication, additional complications arise.
+	[Describe them and propose possible solutions].
+      </t>
+    </section>
+
     <section title="Authentication Model">
       <t>
 	The authentication model assumed in this document is the following:
