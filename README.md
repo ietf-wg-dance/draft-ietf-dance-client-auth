@@ -1,7 +1,7 @@
 # id-dane-client-cert
-Client Certificates in DANE TLSA Records
-draft-huque-dane-client-cert
-Author: Shumon Huque
+Client Certificates in DANE TLSA Records 
+draft-huque-dane-client-cert 
+Author: Shumon Huque 
 
 The current DNS TLSA record format [RFC6698] describes how to specify
 TLS server certificates or their public keys in the DNS.  This
