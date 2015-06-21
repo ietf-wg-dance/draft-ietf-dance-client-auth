@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="US-ASCII"?>
+<!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
+<!-- One method to get references from the online citation libraries.
+     There has to be one entity for each item to be referenced. 
+     An alternate method (rfc include) is described in the references. -->
+
+<!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
+<!ENTITY RFC4035 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4035.xml">
+<!ENTITY RFC5246 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5246.xml">
+<!ENTITY RFC5280 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5280.xml">
+<!ENTITY RFC6125 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6125.xml">
+<!ENTITY RFC6347 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6347.xml">
+<!ENTITY RFC6698 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6698.xml">
+<!ENTITY I-D.narten-iana-considerations-rfc2434bis SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.narten-iana-considerations-rfc2434bis.xml">
+]>
+
+<?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
+<!-- used by XSLT processors -->
+<!-- For a complete list and description of processing instructions (PIs), 
+     please see http://xml.resource.org/authoring/README.html. -->
+<!-- Below are generally applicable Processing Instructions (PIs) that most I-Ds might want to use.
+     (Here they are set differently than their defaults in xml2rfc v1.32) -->
+<?rfc strict="yes" ?>
+<!-- give errors regarding ID-nits and DTD validation -->
+<!-- control the table of contents (ToC) -->
+<?rfc toc="yes"?>
+<!-- generate a ToC -->
+<?rfc tocdepth="4"?>
+<!-- the number of levels of subsections in ToC. default: 3 -->
+<!-- control references -->
+<?rfc symrefs="yes"?>
+<!-- use symbolic references tags, i.e, [RFC2119] instead of [1] -->
+<?rfc sortrefs="yes" ?>
+<!-- sort the reference entries alphabetically -->
+<!-- control vertical white space 
+     (using these PIs as follows is recommended by the RFC Editor) -->
+<?rfc compact="yes" ?>
+<!-- do not start each main section on a new page -->
+<?rfc subcompact="no" ?>
+<!-- keep one blank line between list items -->
+<!-- end of list of popular I-D processing instructions -->
+<rfc category="std" docName="draft-huque-dane-client-cert-00" ipr="trust200902" updates="6698">
+  <!-- category values: std, bcp, info, exp, and historic
+     ipr values: full3667, noModification3667, noDerivatives3667
+     you can add the attributes updates="NNNN" and obsoletes="NNNN" 
+     they will automatically be output with "(if approved)" -->
+
+  <!-- ***** FRONT MATTER ***** -->
+
+  <front>
+    <title abbrev="TLSA client certificates">Client Certificates in DANE TLSA Records</title>
+
+    <author fullname="Shumon Huque" initials="S." surname="Huque">
+      <organization>Verisign Labs</organization>
+      <address>
+        <postal>
+          <street>12061 Bluemont Way</street>
+          <city>Reston</city>
+          <region>VA</region>
+          <code>20190</code>
+          <country>US</country>
+        </postal>
+        <email>shuque@verisign.com</email>
+        <!-- uri and facsimile elements may also be added -->
+      </address>
+    </author>
+
+    <author fullname="Dan James" initials="D." surname="James">
+      <organization>Verisign, Inc.</organization>
+      <address>
+        <postal>
+          <street>12061 Bluemont Way</street>
+          <city>Reston</city>
+          <region>VA</region>
+          <code>20190</code>
+          <country>US</country>
+        </postal>
+        <email>djames@verisign.com</email>
+        <!-- uri and facsimile elements may also be added -->
+      </address>
+    </author>
+
+    <date month="June" year="2015" />
+
+    <!-- Meta-data Declarations -->
+
+    <area>General</area>
+
+    <workgroup>Internet Engineering Task Force</workgroup>
+
+    <keyword>template</keyword>
+
+    <!-- Keywords will be incorporated into HTML output
+         files in a meta tag but they have no effect on text or nroff
+         output. If you submit your draft to the RFC Editor, the
+         keywords will be used for the search engine. -->
+
+    <abstract>
+      <t>The current <xref target="RFC6698">DNS TLSA record format</xref>
+      describes how to specify TLS server certificates or their public keys 
+      in the DNS. This document makes a narrowly focused update to RFC 6698.
+      It describes how to additionally use the TLSA record to specify TLS 
+      client certificates and the rules and considerations for using them.
+      </t>
+    </abstract>
+  </front>
+
+
+  <middle>
+
+
+    <section title="Introduction and Motivation">
+      <t>
+	The <xref target="RFC5246">Transport Layer Security (TLS) 
+	protocol</xref> optionally supports the
+	authentication of clients using 
+	<xref target="RFC5280">X.509 certificates</xref>. TLS Applications
+	currently employing DANE authentication of servers using TLSA records 
+	may also desire to authenticate clients using the same mechanism,
+	especially if the client identity is in the form of or can be 
+	represented by a DNS domain name. Some design patterns from the 
+	Internet of Things (IoT) make use of this form of authentication,
+	where large networks of physical objects identified by DNS
+	names may authenticate themselves using TLS to centralized device
+	management and control platforms.
+      </t>
+      <t>
+	In this document, the term TLS is used generically to describe
+	both the TLS and 
+	<xref target="RFC6347">DTLS (Datagram Transport Layer Security) 
+	</xref> protocols.
+      </t>
+    </section>
+
+
+    <section title="Associating Client Identities in TLSA Records">
+      <t>
+	When specifying client identities (i.e. client domain names) in
+	TLSA records, the owner name of the TLSA record uses a prefixed
+	port number of 0 ("zero") to indicate that the record is for a
+	client identity and not associated with a TLS application service 
+	listening on a particular port. Port number 0 in the UDP and TCP 
+	transport protocols is "Reserved" in the IANA port number registry, 
+	and thus should not be confused with an application service port.
+	The second label, the prefixed transport protocol, is either 
+	"_tcp" for TLS, or "_udp" for DTLS. The remaining labels are 
+	composed of the client domain name.
+
+      </t>
+
+      <t>
+	An alternative format of the owner name is also proposed, in
+	which the client domain name has only one prepended label of 
+	"_client". This form unambiguously defines this to be associated 
+	with client certificates, is agnostic to TLS/DTLS, and avoids 
+	potential problems with misinterpretation of the port label value 
+	of 0, or misinterpretation of the record for non client authentication
+	uses. On the other hand, it redefines the owner name format of the
+	original TLSA record, which may pose additional work to update
+	existing DNS provisioning systems that assume the original owner 
+	name format.
+      </t>
+      <t>
+	Note: This document will eventually specify only one format
+	for the owner name, based on IETF working group consensus.
+      </t>
+      <t>
+	The RDATA or data field portion of the TLSA record is formed 
+	exactly as specified in RFC 6698, and carries the same meaning.
+      </t>
+    </section>
+
+
+    <section title="Authentication Model">
+      <t>
+	The authentication model assumed in this document is the following:
+	The client is assigned an identity corresponding to a DNS
+	domain name (which does not necessarily have any relation to its
+	network layer addresses). The client generates (or has generated 
+	for it) a private and public key pair, and a certificate binding
+	the name to its public key. This certificate has a corresponding
+	TLSA record published in the DNS, which allows it to be authenticated
+	directly via the DNS (using the DANE-TA or DANE-EE usage modes) or 
+	via a PKIX public CA system constraint (using the PKIX-TA or
+	PKIX-EE usage modes).
+      </t>
+    </section>
+
+
+    <section title="Example TLSA records for clients">
+      <figure>
+        <artwork><![CDATA[
+
+The following examples are provided in the textual presentation 
+format of the TLSA record.
+
+An example TLSA record for the client "device1.example.com.". This
+record specifies the use of TLS, and specifies the SHA-256 hash
+of a PKIX CA certificate to authenticate the client's certificate.
+
+_0._tcp.device1.example.com. IN TLSA (
+   0 0 1 d2abde240d7cd3ee6b4b28c54df034b9
+         7983a1d16e8a410e4561cb106618e971 )
+
+An example TLSA record for the client "device2.example.com.". This
+record specifies the use of DTLS, and specifies the SHA-512 hash
+of the subject public key component of the client's certificate. The
+usage mode for this record is 3 (DANE-EE) and hence no PKIX 
+validation for this certificate should be performed.
+
+_0._udp.device2.example.com. IN TLSA (
+   3 1 2 0f8b48ff5fd94117f21b6550aaee89c8
+         d8adbc3f433c8e587a85a14e54667b25
+         f4dcd8c4ae6162121ea9166984831b57
+         b408534451fd1b9702f8de0532ecd03c )
+
+The following is the first example again, using the alternative 
+format of the owner name:
+
+_client.device1.example.com. IN TLSA (
+   0 0 1 d2abde240d7cd3ee6b4b28c54df034b9
+         7983a1d16e8a410e4561cb106618e971 )
+
+
+  	]]></artwork>
+      </figure>
+    </section>
+
+
+    <section title="Changes to Client and Server behavior">
+
+      <t>
+	A TLS Client conforming to this specification has no new
+	TLS protocol behavior requirements. However their DNS
+	publisher has a requirement to publish a signed TLSA
+	record corresponding to the client's DNS name and X.509
+	certificate. The client presents this certificate in the TLS
+	handshake with the server. The presented client certificate 
+	MUST have have the client's DNS name specified in the 
+	Subject Alternative Name extension's dNSName type.
+      </t>
+
+      <t>
+	A TLS Server implementing this specification performs the 
+	following steps:
+
+	<list counter="reqs" hangIndent="4" style="format S%d">
+
+	  <t>Request a client certificate in the TLS handshake (the
+	  "Client Certificate Request" message).</t>
+
+	  <t>Extract the client identity from the Subject Alternative
+	  Name extension's dNSName type in the client certificate.</t>
+
+	  <t>Construct the DNS query name for the corresponding TLSA
+	  record, by prepending the _0 and transport labels to the
+	  client name. If the alternate owner name format is being 
+	  used, the DNS query name is obtained by prepending the label 
+	  "_client" to the client name.</t>
+
+	  <t>Look up the TLSA record in the DNS. The response MUST be
+	  cryptographically validated using DNSSEC. Ideally, the
+	  server should perform the DNSSEC validation itself, but it
+	  may be acceptable for a server to be configured to trust 
+	  responses obtained via an external validating resolver to 
+	  which it has a secure connection.</t>
+
+	  <t>Extract the RDATA of the TLSA record and match it to the
+	  presented client certificate according to the rules specified
+	  in the <xref target="RFC6698">DANE TLS protocol</xref>.
+	  If successfully matched, the client is authenticated and
+	  the TLS session proceeds. If not, the session is terminated
+	  with a "bad_certificate" alert message.</t>
+
+	  <t>If there are multiple records in the TLSA record set,
+	  then the client is authenticated as long as one of the TLSA
+	  records matches.</t>
+
+	</list>
+      </t>
+
+      <t>
+	Specific applications may be designed to require more detailed 
+	validation steps. For example, a server might want to verify the 
+	client's IP address is associated with the certificate in some 
+	manner, eg. by confirming that a secure reverse DNS lookup of 
+	that address ties it back to the same domain name, or by requiring 
+	an iPAddress component to be included in the certificate. Such
+	details are outside of the scope of this document, and should be
+	outlined in other application specific documents.
+      </t>
+
+      <t>
+	Servers may have their own whitelisting and authorization rules
+	for which certificates they accept. For example a TLS server may
+	be configured to only allow TLS sessions from clients with 
+	certificate identities within a specific domain or set of domains.
+      </t>
+
+      <t>
+	If the presented client certificate has  multiple
+	distinct reference identifier types (e.g. a dNSName, and an
+	rfc822Name) then TLS servers configured to perform DANE 
+	authentication according to this specification should only 
+	examine and authenticate the dNSName identity. See 
+	<xref target="RFC6125" /> for a descripton of reference
+	identifiers and matching rules.
+      </t>
+
+      <t>
+	If the presented client certificate has multiple dNSName
+	identities, then an appropriate identity is selected according
+	to any authorization rules the server possesses. Otherwise,
+	the first identity that can be authenticated is used.
+      </t>
+
+    </section>
+
+
+    <section title="Open Issues">
+      <t>
+	Should we describe the use of raw public keys for clients in
+	TLSA records? This use case employs only usage mode 3 (DANE-EE), 
+	selector 1 (SPKI), and matching-type of 0 (full key). The main
+	challenge this poses is that there is no client identity 
+	presented alongside the raw public key, so another mechanism
+	would be needed to communicate the identity to the server.
+      </t>
+      <t>
+	Should this document also consider client identities in the form
+	of e-mail addresses? The use case might be an SMTP client talking
+	to an SMTP submission server. In that case, the email address would
+	most likely be conveyed in the certificate in a subject alt name
+	rfc822Name type. The corresponding TLSA record would have to then
+	have an owner name format similar to the OPENPGPKEY or SMIMEA
+	records. Or perhaps those specifications should consider this use
+	case instead.
+      </t>
+    </section>
+
+
+    <section anchor="Acknowledgements" title="Acknowledgements">
+      <t>
+	This document benefited from discussions with the following 
+	people: Duane Wessels, Allison Mankin, Casey Deccio, Warren 
+	Kumari, and Viktor Dukhovni.
+      </t>
+    </section>
+
+    <section anchor="IANA" title="IANA Considerations">
+      <t>This document includes no request to IANA.</t>
+    </section>
+
+    <section anchor="Security" title="Security Considerations">
+      <t>
+	This document makes a narrow update to RFC 6698 by defining the 
+	usage of the TLSA record for client TLS certificates. There are 
+	no security considerations for this document beyond those described 
+	in RFC 6698 and in the specifications for TLS and DTLS [RFC5246], 
+	[RFC6347].
+      </t>
+    </section>
+  </middle>
+
+  <!--  *****BACK MATTER ***** -->
+
+  <back>
+    <references title="Normative References">
+      &RFC4035;
+      &RFC5246;
+      &RFC5280;
+      &RFC6125;
+      &RFC6347;
+      &RFC6698;
+    </references>
+
+    <references title="Informative References">
+      &RFC3552;
+    </references>
+  </back>
+
+</rfc>
