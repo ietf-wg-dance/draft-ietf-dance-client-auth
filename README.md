@@ -1,5 +1,4 @@
-# id-dane-client-cert
-Client Certificates in DANE TLSA Records 
+#Client Certificates in DANE TLSA Records 
 draft-huque-dane-client-cert 
 Author: Shumon Huque 
 
