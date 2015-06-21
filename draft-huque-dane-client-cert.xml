@@ -362,8 +362,9 @@ _client.device1.example.com. IN TLSA (
 	TLSA records? This use case employs only usage mode 3 (DANE-EE), 
 	selector 1 (SPKI), and matching-type of 0 (full key). The main
 	challenge this poses is that there is no client identity 
-	presented alongside the raw public key, so another mechanism
-	would be needed to communicate the identity to the server.
+	presented alongside the raw public key, so this will depend on
+	having the new client identity signalling solution discussed
+	previously.
       </t>
       <t>
 	Should this document also consider client identities in the form
