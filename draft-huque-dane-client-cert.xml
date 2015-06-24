@@ -133,32 +133,36 @@
     </section>
 
 
-    <section title="Associating Client Identities in TLSA Records">
+    <section title="Associating Client Identities in TLSA Records"
+	     anchor="owner_format">
       <t>
 	When specifying client identities (i.e. client domain names) in
-	TLSA records, the owner name of the TLSA record uses a prefixed
-	port number of 0 ("zero") to indicate that the record is for a
-	client identity and not associated with a TLS application service 
-	listening on a particular port. Port number 0 in the UDP and TCP 
-	transport protocols is "Reserved" in the IANA port number registry, 
-	and thus should not be confused with an application service port.
-	The second label, the prefixed transport protocol, is either 
-	"_tcp" for TLS, or "_udp" for DTLS. The remaining labels are 
-	composed of the client domain name.
-
+	TLSA records, the owner name of the TLSA record is proposed to
+	have one of the two formats described below:
       </t>
-
       <t>
-	An alternative format of the owner name is also proposed, in
-	which the client domain name has only one prepended label of 
-	"_client". This form unambiguously defines this to be associated 
-	with client certificates, is agnostic to TLS/DTLS, and avoids 
-	potential problems with misinterpretation of the port label value 
-	of 0, or misinterpretation of the record for non client authentication
-	uses. On the other hand, it redefines the owner name format of the
-	original TLSA record, which may pose additional work to update
-	existing DNS provisioning systems that assume the original owner 
-	name format.
+	Format 1: The first label identifies the application service, 
+	and the  second identifies the transport protocol. The remaining 
+	labels are composed of the client domain name. So the form looks 
+	like _service._transport.[client-domain-name].
+      </t>
+      <t>
+	Format 2: The first label is the constant string "_client" and
+	the second label identifies the transport protocol. The remaining 
+	labels are composed of the client domain name. So the form looks 
+	like _client._service.[client-domain-name]. This form is
+	transport protocol agnostic, and has a constant string that can
+	be used to easily identify TLSA records for client certificates.
+      </t>
+      <t>
+	Encoding the application service name into the owner name allows
+	the same client domain name to have different authentication
+	credentials for different application services.
+      </t>
+      <t>
+	The _service label could be a custom string for an application,
+	but more commonly is expected to be service name registered in
+	the <xref target="SRVREG">IANA Service Name Registry</xref>.
       </t>
       <t>
 	Note: This document will eventually specify only one format
@@ -199,7 +203,7 @@
 	at its discretion continue the handshake without client 
 	authentication. However in practice, problems often arise. There
 	are deployed client software implementations that do not react 
-	properly when  encountering a certificate request that they did 
+	gracefully when encountering a certificate request that they did 
 	not expect. 
 	[Insert Reference from SMTP implementations?].
       </t>
@@ -223,40 +227,57 @@
 
 
     <section title="Example TLSA records for clients">
+
+      <t>
+	The following examples are provided in the textual presentation 
+	format of the TLSA record.
+      </t>
+      <t>
+	An example TLSA record for the client "device1.example.com." and
+	the application service "smtp" on transport "tcp". This record
+	record specifies the use of TLS, and specifies the SHA-256 hash
+	of a PKIX CA certificate to authenticate the client's certificate.
+      </t>
       <figure>
         <artwork><![CDATA[
 
-The following examples are provided in the textual presentation 
-format of the TLSA record.
-
-An example TLSA record for the client "device1.example.com.". This
-record specifies the use of TLS, and specifies the SHA-256 hash
-of a PKIX CA certificate to authenticate the client's certificate.
-
-_0._tcp.device1.example.com. IN TLSA (
+Format 1:
+_smtp._tcp.device1.example.com. IN TLSA (
    0 0 1 d2abde240d7cd3ee6b4b28c54df034b9
          7983a1d16e8a410e4561cb106618e971 )
 
-An example TLSA record for the client "device2.example.com.". This
-record specifies the use of DTLS, and specifies the SHA-512 hash
-of the subject public key component of the client's certificate. The
-usage mode for this record is 3 (DANE-EE) and hence no PKIX 
-validation for this certificate should be performed.
+Format 2:
+_client._smtp.device1.example.com. IN TLSA (
+   0 0 1 d2abde240d7cd3ee6b4b28c54df034b9
+         7983a1d16e8a410e4561cb106618e971 )
+  	]]></artwork>
+      </figure>
 
-_0._udp.device2.example.com. IN TLSA (
+      <t>
+	An example TLSA record for the client "device2.example.com." and
+	the application service "bubble" on transport "udp". This
+	record specifies the use of DTLS, and specifies the SHA-512 hash
+	of the subject public key component of the client's certificate. The
+	usage mode for this record is 3 (DANE-EE) and hence no PKIX 
+	validation for this certificate should be performed.
+      </t>
+
+      <figure>
+        <artwork><![CDATA[
+
+Format 1:
+_bubbles._udp.device2.example.com. IN TLSA (
    3 1 2 0f8b48ff5fd94117f21b6550aaee89c8
          d8adbc3f433c8e587a85a14e54667b25
          f4dcd8c4ae6162121ea9166984831b57
          b408534451fd1b9702f8de0532ecd03c )
 
-The following is the first example again, using the alternative 
-format of the owner name:
-
-_client.device1.example.com. IN TLSA (
-   0 0 1 d2abde240d7cd3ee6b4b28c54df034b9
-         7983a1d16e8a410e4561cb106618e971 )
-
-
+Format 2:
+_client._bubbles.device2.example.com. IN TLSA (
+   3 1 2 0f8b48ff5fd94117f21b6550aaee89c8
+         d8adbc3f433c8e587a85a14e54667b25
+         f4dcd8c4ae6162121ea9166984831b57
+         b408534451fd1b9702f8de0532ecd03c )
   	]]></artwork>
       </figure>
     </section>
@@ -291,10 +312,10 @@ _client.device1.example.com. IN TLSA (
 	  the handshake without client authentication.)</t>
 
 	  <t>Construct the DNS query name for the corresponding TLSA
-	  record, by prepending the _0 and transport labels to the
-	  client name. If the alternate owner name format is being 
-	  used, the DNS query name is obtained by prepending the label 
-	  "_client" to the client name.</t>
+	  record, by prepending the application service, transport
+	  protocol, and "_client" labels according to which format
+	  is being used. See <xref target="owner_format" /> for the
+	  proposed owner name formats.</t>
 
 	  <t>Look up the TLSA record in the DNS. The response MUST be
 	  cryptographically validated using DNSSEC. The server could
