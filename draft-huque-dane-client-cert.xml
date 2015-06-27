@@ -6,6 +6,7 @@
 
 <!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
 <!ENTITY RFC4035 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4035.xml">
+<!ENTITY RFC4985 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.4985.xml">
 <!ENTITY RFC5246 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5246.xml">
 <!ENTITY RFC5280 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.5280.xml">
 <!ENTITY RFC6125 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6125.xml">
@@ -200,7 +201,30 @@
     </section>
 
 
-    <section title="Signaling the Client's DANE Identity"
+    <section title="Client Identifiers in X.509 certificates"
+	     anchor="cert_id">
+      <t>
+	The client certificate MUST have have the client's DNS name 
+	specified in the Subject Alternative Name extension's dNSName 
+	type. Or, if an application specific identity is preferred or
+	needed, the SRV-ID (PKIX OtherName SRVName) MUST be used to 
+	specify the application service and the client's name, e.g.
+	"_smtp-client.device1.example.com". See <xref target="RFC6125" />
+	and <xref target="RFC4985" /> for a discussion of application 
+	specific identifiers in X.509 certificates.
+      </t>
+      <t>
+	The initial revision of this document talks mainly about
+	dNSName identifiers, because SRV-ID has not seen much
+	adoption in the Internet to date. However, with TLSA usage modes 
+	except for DANE-EE, there may be a problem separating different 
+	client credentials with the same underlying domain name, but 
+	distinct services unless SRV-ID is employed.
+      </t>
+    </section>
+
+
+    <section title="Signaling the Client's DANE Identity in TLS"
 	     anchor="client_signal">
       <t>
 	The protocol described in the initial version of this document
@@ -208,7 +232,7 @@
 	where it is optional, clients can handle a Client Certificate 
 	Request message from the server without issues if they are not 
 	equipped with client certificates. Technically, the TLS protocol 
-	specification states the client may respond with a Client 
+	specification states that the client may respond with a Client 
 	Certificate message with no certificate, and that the server may 
 	at its discretion continue the handshake without client 
 	authentication. However in practice, problems may arise. There
@@ -311,8 +335,9 @@ _client._localsvc.device2.example.com. IN TLSA (
 	its DNS name and X.509 certificate. The client 
 	presents this certificate in the TLS handshake with the 
 	server. The presented client certificate MUST have have 
-	the client's DNS name specified in the 
-	Subject Alternative Name extension's dNSName type. 
+	the client's DNS name specified either in the 
+	Subject Alternative Name extension's dNSName type, 
+	or the SRVName type.
       </t>
 
       <t>
@@ -325,7 +350,7 @@ _client._localsvc.device2.example.com. IN TLSA (
 	  "Client Certificate Request" message).</t>
 
 	  <t>Extract the client identity from the Subject Alternative
-	  Name extension's dNSName type in the client certificate.
+	  Name extension's dNSName or SRVName type in the client certificate.
 	  (If no client certificate is provided, then the server may
 	  terminate the connection, or at its discretion may continue 
 	  the handshake without client authentication.)</t>
@@ -379,15 +404,16 @@ _client._localsvc.device2.example.com. IN TLSA (
 	distinct reference identifier types (e.g. a dNSName, and an
 	rfc822Name) then TLS servers configured to perform DANE 
 	authentication according to this specification should only 
-	examine and authenticate the dNSName identity. See 
-	<xref target="RFC6125" /> for a descripton of reference
+	examine and authenticate the dNSName or SRVName identity. See 
+	<xref target="RFC6125" /> for a description of reference
 	identifiers and matching rules.
       </t>
 
       <t>
 	If the presented client certificate has multiple dNSName
-	identities, then the client MUST use an identity signalling
-	mechanism to indicate the intended name to the server.
+	or SRVName identities, then the client MUST use an identity 
+	signalling mechanism to indicate the intended name to the 
+	server.
       </t>
 
     </section>
@@ -448,6 +474,7 @@ _client._localsvc.device2.example.com. IN TLSA (
   <back>
     <references title="Normative References">
       &RFC4035;
+      &RFC4985;
       &RFC5246;
       &RFC5280;
       &RFC6125;
