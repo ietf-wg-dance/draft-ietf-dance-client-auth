@@ -215,7 +215,6 @@
 	are deployed client software implementations that do not react 
 	gracefully when encountering a certificate request that they did 
 	not expect. 
-	[Insert Reference from SMTP implementations?].
       </t>
       <t>
 	Furthermore, a server may want an explicit indication from 
@@ -224,18 +223,18 @@
 	clients that don't support this.
       </t>
       <t>
-	Hence, to address this problem most generally, a client 
-	identity signaling solution will need to be devised, whereby
-	the client indicates its DANE identity (i.e. its domain
-	name identity and the fact that this identity has an
-	associated DANE record) to the server. Application specific
-	protocol enhancements would be one way to achieve this, e.g.
-	a new SMTP command. A more general way would be to develop
-	a new TLS extension to convey this information.
+	Hence, to address this issue generally, a client identity 
+	signaling solution will need to be devised, whereby the 
+	client indicates its DANE identity (i.e. its domain name 
+	identity and the fact that this identity has an associated 
+	TLSA record) to the server. Application specific protocol 
+	enhancements are one way to achieve this, e.g. a new SMTP 
+	command. A more general way would be to develop a new TLS 
+	extension to convey this information.
       </t>
       <t>
-	[Another internet draft is being written to define a TLS
-	extension to convey DANE client identity.]
+	[Another internet draft is currently being written to define 
+	such a TLS extension to convey DANE client identity.]
       </t>
     </section>
 
@@ -297,22 +296,23 @@ _client._localsvc.device2.example.com. IN TLSA (
     </section>
 
 
-    <section title="Changes to Client and Server behavior">
+    <section title="Changes to Client and Server behavior" anchor="changes">
 
       <t>
-	[Note: As the client signaling solution is developed, this section
-	will undergo enhancements to use it.]
+	[Note: As the client identity signaling solution is developed, 
+	 this section will undergo enhancements to use it. A future
+	 revision of this document will also explicitly address the
+	 use case of raw public keys instead of X.509 certificates.]
       </t>
 
       <t>
-	A TLS Client conforming to this specification has no new
-	TLS protocol behavior requirements. However their DNS
-	publisher has a requirement to publish a signed TLSA
-	record corresponding to the client's DNS name and X.509
-	certificate. The client presents this certificate in the TLS
-	handshake with the server. The presented client certificate 
-	MUST have have the client's DNS name specified in the 
-	Subject Alternative Name extension's dNSName type.
+	A TLS Client conforming to this specification MUST
+	have a signed DNS TLSA record published corresponding to 
+	its DNS name and X.509 certificate. The client 
+	presents this certificate in the TLS handshake with the 
+	server. The presented client certificate MUST have have 
+	the client's DNS name specified in the 
+	Subject Alternative Name extension's dNSName type. 
       </t>
 
       <t>
@@ -386,12 +386,8 @@ _client._localsvc.device2.example.com. IN TLSA (
 
       <t>
 	If the presented client certificate has multiple dNSName
-	identities, then an appropriate identity is selected according
-	to any authorization rules the server possesses. Otherwise,
-	the first identity that can be authenticated is used.
-	[ToDo: In the pre-signalling version, restrict certificates to
-	only one dNSName.]
-
+	identities, then the client MUST use an identity signalling
+	mechanism to indicate the intended name to the server.
       </t>
 
     </section>
