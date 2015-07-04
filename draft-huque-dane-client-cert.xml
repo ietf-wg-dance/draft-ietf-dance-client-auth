@@ -165,7 +165,7 @@ _service.[client-domain-name]
 	Encoding the application service name into the owner name allows
 	the same client domain name to have different authentication
 	credentials for different application services. There is no need
-	encode the transport label - the same name form is usable with
+	to encode the transport label - the same name form is usable with
 	both TLS and DTLS.
       </t>
       <t>
@@ -189,7 +189,7 @@ _service.[client-domain-name]
 	domain name. This domain name doesn't necessarily have any 
 	relation to its network layer addresses. Clients often
 	have dynamic addresses and move around the network so tying their
-	identity to network addresses may not be feasible or wise in the 
+	identity to network addresses is not feasible or wise in the 
 	general case.
       </t>
       <t>
@@ -245,8 +245,8 @@ _service.[client-domain-name]
 	not expect. 
       </t>
       <t>
-	Furthermore, a server may want an explicit indication from 
-	the client that it has a DANE record, so as to avoid 
+	More importantly, a server may want an explicit indication
+	from the client that it has a DANE record, so as to avoid 
 	unnecessary DNS queries in-band with the TLS handshake for
 	clients that don't support this.
       </t>
@@ -289,11 +289,10 @@ _smtp-client.device1.example.com. IN TLSA (
 
       <t>
 	An example TLSA record for the client "device2.example.com." and
-	the application "localsvc" using the DANE-EE mode. This record 
-	specifies the SHA-512 hash of the subject public key component of 
-	the client's certificate. The usage mode for this record is 3 
-	(DANE-EE) and hence no PKIX validation for this certificate should 
-	be performed.
+	the application "localsvc". This record specifies the SHA-512 hash 
+	of the subject public key component of the client's certificate. 
+	The usage mode for this record is 3 (DANE-EE) and hence no PKIX 
+	validation for this certificate should be performed.
       </t>
 
       <figure>
@@ -373,30 +372,13 @@ _localsvc.device2.example.com. IN TLSA (
       </t>
 
       <t>
-	Specific applications may be designed to require more detailed 
-	validation steps. For example, a server might want to verify the 
-	client's IP address is associated with the certificate in some 
-	manner, e.g. by confirming that a secure reverse DNS lookup of 
-	that address ties it back to the same domain name, or by requiring 
-	an iPAddress component to be included in the certificate. Such
-	details are outside the scope of this document, and should be
-	outlined in other documents specific to the applications that
-	need this behavior.
-      </t>
-
-      <t>
-	Servers may have their own whitelisting and authorization rules
-	for which certificates they accept. For example a TLS server may
-	be configured to only allow TLS sessions from clients with 
-	certificate identities within a specific domain or set of domains.
-      </t>
-
-      <t>
 	If the presented client certificate has  multiple
 	distinct reference identifier types (e.g. a dNSName, and an
 	rfc822Name) then TLS servers configured to perform DANE 
 	authentication according to this specification should only 
-	examine and authenticate the dNSName or SRVName identity. See 
+	examine and authenticate the dNSName or SRVName identity. 
+	If the certificate contains both dNSName and SRVName identities,
+	SRVName should be preferred. See 
 	<xref target="RFC6125" /> for a description of reference
 	identifiers and matching rules.
       </t>
@@ -406,6 +388,25 @@ _localsvc.device2.example.com. IN TLSA (
 	or SRVName identities, then the client MUST use an identity 
 	signalling mechanism to indicate the intended name to the 
 	server.
+      </t>
+
+      <t>
+	Specific applications may be designed to require more detailed 
+	validation steps. For example, a server might want to verify the 
+	client's IP address is associated with the certificate in some 
+	manner, e.g. by confirming that a secure reverse DNS lookup of 
+	that address ties it back to the same domain name, or by requiring 
+	an iPAddress component to be included in the certificate. Such
+	details are outside the scope of this document, and should be
+	outlined in other documents specific to the applications that
+	require this behavior.
+      </t>
+
+      <t>
+	Servers may have their own whitelisting and authorization rules
+	for which certificates they accept. For example a TLS server may
+	be configured to only allow TLS sessions from clients with 
+	certificate identities within a specific domain or set of domains.
       </t>
 
     </section>
