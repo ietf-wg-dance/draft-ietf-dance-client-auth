@@ -12,6 +12,7 @@
 <!ENTITY RFC6125 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6125.xml">
 <!ENTITY RFC6347 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6347.xml">
 <!ENTITY RFC6698 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6698.xml">
+<!ENTITY RFC7218 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7218.xml">
 <!ENTITY RFC7250 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7250.xml">
 <!ENTITY I-D.narten-iana-considerations-rfc2434bis SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.narten-iana-considerations-rfc2434bis.xml">
 ]>
@@ -41,7 +42,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-huque-dane-client-cert-00" ipr="trust200902" updates="6698">
+<rfc category="std" docName="draft-huque-dane-client-cert-01" ipr="trust200902" updates="6698">
   <!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
      you can add the attributes updates="NNNN" and obsoletes="NNNN" 
@@ -90,7 +91,7 @@
       </address>
     </author>
 
-    <date month="June" year="2015" />
+    <date month="July" year="2015" />
 
     <!-- Meta-data Declarations -->
 
@@ -147,36 +148,30 @@
 	     anchor="owner_format">
       <t>
 	When specifying client identities (i.e. client domain names) in
-	TLSA records, the owner name of the TLSA record is proposed to
-	have one of the two formats described below:
+	TLSA records, the owner name of the TLSA record has the following
+	format:
       </t>
+      <figure>
+        <artwork><![CDATA[
+
+_service.[client-domain-name]
+  	]]></artwork>
+      </figure>
       <t>
-	Format 1: The first label identifies the application service, 
-	and the  second identifies the transport protocol. The remaining 
-	labels are composed of the client domain name. So the form looks 
-	like _service._transport.[client-domain-name].
-      </t>
-      <t>
-	Format 2: The first label is the constant string "_client" and
-	the second label identifies the application service. The remaining 
-	labels are composed of the client domain name. So the form looks 
-	like _client._service.[client-domain-name]. This form is
-	transport protocol agnostic, and has a constant string that can
-	be used to easily identify TLSA records for client certificates.
+	The first label identifies the application service name. The
+	remaining labels are composed of the client domain name.
       </t>
       <t>
 	Encoding the application service name into the owner name allows
 	the same client domain name to have different authentication
-	credentials for different application services.
+	credentials for different application services. There is no need
+	encode the transport label - the same name form is usable with
+	both TLS and DTLS.
       </t>
       <t>
 	The _service label could be a custom string for an application,
 	but more commonly is expected to be service name registered in
 	the <xref target="SRVREG">IANA Service Name Registry</xref>.
-      </t>
-      <t>
-	Note: The final version of this document will specify only one 
-	format for the owner name, based on IETF working group consensus.
       </t>
       <t>
 	The RDATA or data field portion of the TLSA record is formed 
@@ -188,14 +183,22 @@
     <section title="Authentication Model" anchor="auth_model">
       <t>
 	The authentication model assumed in this document is the following:
+      </t>
+      <t>
 	The client is assigned an identity corresponding to a DNS
-	domain name (which does not necessarily have any relation to its
-	network layer addresses). The client generates (or has generated 
-	for it) a private and public key pair, and a certificate binding
-	the name to its public key. This certificate has a corresponding
-	TLSA record published in the DNS, which allows it to be authenticated
-	directly via the DNS (using the DANE-TA or DANE-EE usage modes) or 
-	via a PKIX public CA system constraint (using the PKIX-TA or
+	domain name. This domain name doesn't necessarily have any 
+	relation to its network layer addresses. Clients often
+	have dynamic addresses and move around the network so tying their
+	identity to network addresses may not be feasible or wise in the 
+	general case.
+      </t>
+      <t>
+	The client generates (or has generated for it) a private and 
+	public key pair, and a certificate binding the name to its 
+	public key. This certificate has a corresponding TLSA record 
+	published in the DNS, which allows it to be authenticated
+	directly via the DNS (using the DANE-TA or DANE-EE usage modes) 
+	or via a PKIX public CA system constraint (using the PKIX-TA or
 	PKIX-EE usage modes).
       </t>
     </section>
@@ -217,9 +220,10 @@
 	The initial revision of this document talks mainly about
 	dNSName identifiers, because SRV-ID has not seen much
 	adoption in the Internet to date. However, with TLSA usage modes 
-	except for DANE-EE, there may be a problem separating different 
-	client credentials with the same underlying domain name, but 
-	distinct services unless SRV-ID is employed.
+	except for DANE-EE, if there is a need to isolate multiple 
+	application specific credentials from each other on the same
+	client (i.e. with the same underlying base domain name), then
+	SRV-ID would need to be employed.
       </t>
     </section>
 
@@ -271,20 +275,13 @@
       </t>
       <t>
 	An example TLSA record for the client "device1.example.com." and
-	the application "smtp-client" on transport "tcp". This record
-	record specifies the use of TLS, and specifies the SHA-256 hash
+	the application "smtp-client". This record specifies the SHA-256 hash
 	of a PKIX CA certificate to authenticate the client's certificate.
       </t>
       <figure>
         <artwork><![CDATA[
 
-Format 1:
-_smtp-client._tcp.device1.example.com. IN TLSA (
-   0 0 1 d2abde240d7cd3ee6b4b28c54df034b9
-         7983a1d16e8a410e4561cb106618e971 )
-
-Format 2:
-_client._smtp-client.device1.example.com. IN TLSA (
+_smtp-client.device1.example.com. IN TLSA (
    0 0 1 d2abde240d7cd3ee6b4b28c54df034b9
          7983a1d16e8a410e4561cb106618e971 )
   	]]></artwork>
@@ -292,25 +289,17 @@ _client._smtp-client.device1.example.com. IN TLSA (
 
       <t>
 	An example TLSA record for the client "device2.example.com." and
-	the application "localsvc" on transport "udp". This record specifies 
-	the use of DTLS, and specifies the SHA-512 hash of the subject 
-	public key component of the client's certificate. The usage mode 
-	for this record is 3 (DANE-EE) and hence no PKIX validation for 
-	this certificate should be performed.
+	the application "localsvc" using the DANE-EE mode. This record 
+	specifies the SHA-512 hash of the subject public key component of 
+	the client's certificate. The usage mode for this record is 3 
+	(DANE-EE) and hence no PKIX validation for this certificate should 
+	be performed.
       </t>
 
       <figure>
         <artwork><![CDATA[
 
-Format 1:
-_localsvc._udp.device2.example.com. IN TLSA (
-   3 1 2 0f8b48ff5fd94117f21b6550aaee89c8
-         d8adbc3f433c8e587a85a14e54667b25
-         f4dcd8c4ae6162121ea9166984831b57
-         b408534451fd1b9702f8de0532ecd03c )
-
-Format 2:
-_client._localsvc.device2.example.com. IN TLSA (
+_localsvc.device2.example.com. IN TLSA (
    3 1 2 0f8b48ff5fd94117f21b6550aaee89c8
          d8adbc3f433c8e587a85a14e54667b25
          f4dcd8c4ae6162121ea9166984831b57
@@ -325,7 +314,7 @@ _client._localsvc.device2.example.com. IN TLSA (
       <t>
 	[Note: As the client identity signaling solution is developed, 
 	 this section will undergo enhancements to use it. A future
-	 revision of this document will also explicitly address the
+	 revision of this document will explicitly address the additional
 	 use case of raw public keys instead of X.509 certificates.]
       </t>
 
@@ -356,10 +345,12 @@ _client._localsvc.device2.example.com. IN TLSA (
 	  the handshake without client authentication.)</t>
 
 	  <t>Construct the DNS query name for the corresponding TLSA
-	  record, by prepending the application service, transport
-	  protocol, and "_client" labels according to which format
-	  is being used. See <xref target="owner_format" /> for the
-	  proposed owner name formats.</t>
+	  record. For dNSName, the underscored application service label
+	  is prepended to the domain name, corresponding to the application
+	  in use. For SRVName, the DNS query name is identical to the
+	  content of the SRVName identifier. See 
+	  <xref target="owner_format" /> for the proposed owner name 
+	  format.</t>
 
 	  <t>Look up the TLSA record in the DNS. The response MUST be
 	  cryptographically validated using DNSSEC. The server could
@@ -389,7 +380,8 @@ _client._localsvc.device2.example.com. IN TLSA (
 	that address ties it back to the same domain name, or by requiring 
 	an iPAddress component to be included in the certificate. Such
 	details are outside the scope of this document, and should be
-	outlined in other application specific documents.
+	outlined in other documents specific to the applications that
+	need this behavior.
       </t>
 
       <t>
@@ -425,7 +417,7 @@ _client._localsvc.device2.example.com. IN TLSA (
 	<xref target="RFC7250">raw public keys in TLS</xref>.
 	This use case employs only usage mode 3 (DANE-EE) and a
 	selector value of 1 (SPKI) in the DANE TLSA record, as 
-	described in <xref target="DANERAW" />. It requires the
+	described in <xref target="DANEOPS" />. It requires the
 	use of the new client identity signaling solution discussed
 	previously.
       </t>
@@ -480,6 +472,7 @@ _client._localsvc.device2.example.com. IN TLSA (
       &RFC6125;
       &RFC6347;
       &RFC6698;
+      &RFC7218;
       &RFC7250;
     </references>
 
@@ -492,11 +485,11 @@ _client._localsvc.device2.example.com. IN TLSA (
           <author fullname="IANA" surname="IANA" />
 	</front>
       </reference>
-    <reference anchor="DANERAW"
-      target="https://tools.ietf.org/html/draft-ietf-dane-rawkeys-00">
+    <reference anchor="DANEOPS"
+      target="https://tools.ietf.org/html/draft-ietf-dane-ops">
       <front>
-        <title>Authenticating Raw Public Keys with DANE TLSA</title>
-        <author fullname="John Gilmore" initials="J" surname="Gilmore" />
+        <title>Updates to and Operational Guidance for the DANE Protocol</title>
+        <author fullname="Viktor Dukhovni" initials="V" surname="Dukhovni" />
       </front>
     </reference>
     </references>
