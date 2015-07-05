@@ -56,13 +56,6 @@
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Verisign Labs</organization>
       <address>
-        <postal>
-          <street>12061 Bluemont Way</street>
-          <city>Reston</city>
-          <region>VA</region>
-          <code>20190</code>
-          <country>US</country>
-        </postal>
         <email>shuque@verisign.com</email>
         <!-- uri and facsimile elements may also be added -->
       </address>
@@ -71,13 +64,6 @@
     <author fullname="Dan James" initials="D." surname="James">
       <organization>Verisign, Inc.</organization>
       <address>
-        <postal>
-          <street>12061 Bluemont Way</street>
-          <city>Reston</city>
-          <region>VA</region>
-          <code>20190</code>
-          <country>US</country>
-        </postal>
         <email>djames@verisign.com</email>
         <!-- uri and facsimile elements may also be added -->
       </address>
@@ -91,27 +77,27 @@
       </address>
     </author>
 
-    <date month="July" year="2015" />
+    <date day="05" month="July" year="2015" />
 
     <!-- Meta-data Declarations -->
 
     <area>General</area>
-
     <workgroup>Internet Engineering Task Force</workgroup>
-
-    <keyword>template</keyword>
-
-    <!-- Keywords will be incorporated into HTML output
-         files in a meta tag but they have no effect on text or nroff
-         output. If you submit your draft to the RFC Editor, the
-         keywords will be used for the search engine. -->
+    <keyword>Internet-Draft</keyword>
+    <keyword>DANE</keyword>
+    <keyword>DNSSEC</keyword>
+    <keyword>Authentication</keyword>
+    <keyword>Client Certificate</keyword>
+    <keyword>X.509 Certificate</keyword>
+    <keyword>Raw Public Key</keyword>
 
     <abstract>
       <t>The current <xref target="RFC6698">DNS TLSA record format</xref>
       describes how to specify TLS server certificates or their public keys 
       in the DNS. This document makes a narrowly focused update to RFC 6698.
-      It describes how to additionally use the TLSA record to specify TLS 
-      client certificates and the rules and considerations for using them.
+      It describes how to additionally use the TLSA record to specify 
+      client certificates, and also the rules and considerations for using 
+      them with the TLS protocol.
       </t>
     </abstract>
   </front>
@@ -170,7 +156,7 @@ _service.[client-domain-name]
       </t>
       <t>
 	The _service label could be a custom string for an application,
-	but more commonly is expected to be service name registered in
+	but more commonly is expected to be a service name registered in
 	the <xref target="SRVREG">IANA Service Name Registry</xref>.
       </t>
       <t>
@@ -188,9 +174,9 @@ _service.[client-domain-name]
 	The client is assigned an identity corresponding to a DNS
 	domain name. This domain name doesn't necessarily have any 
 	relation to its network layer addresses. Clients often
-	have dynamic addresses and move around the network so tying their
-	identity to network addresses is not feasible or wise in the 
-	general case.
+	have dynamic or unpredictable addresses, and may move around 
+	the network, so tying their identity to network addresses is 
+	not feasible or wise in the general case.
       </t>
       <t>
 	The client generates (or has generated for it) a private and 
@@ -288,7 +274,7 @@ _smtp-client.device1.example.com. IN TLSA (
       </figure>
 
       <t>
-	An example TLSA record for the client "device2.example.com." and
+	An example TLSA record for the client "client2.example.com." and
 	the application "localsvc". This record specifies the SHA-512 hash 
 	of the subject public key component of the client's certificate. 
 	The usage mode for this record is 3 (DANE-EE) and hence no PKIX 
@@ -298,7 +284,7 @@ _smtp-client.device1.example.com. IN TLSA (
       <figure>
         <artwork><![CDATA[
 
-_localsvc.device2.example.com. IN TLSA (
+_localsvc.client2.example.com. IN TLSA (
    3 1 2 0f8b48ff5fd94117f21b6550aaee89c8
          d8adbc3f433c8e587a85a14e54667b25
          f4dcd8c4ae6162121ea9166984831b57
