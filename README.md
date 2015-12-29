@@ -10,7 +10,7 @@ certificates and the rules and considerations for using them.
 
 [...]
 
-A HTML version of this document is available at
-[https://www.huque.com/ietf/draft-huque-dane-client-cert.html]
-(https://www.huque.com/ietf/draft-huque-dane-client-cert.html)
+Readable versions of the current document can be found at the following links:
 
+* [HTML] (https://www.huque.com/ietf/dane-client-cert/draft-huque-dane-client-cert.html)
+* [TEXT] (https://www.huque.com/ietf/dane-client-cert/draft-huque-dane-client-cert.txt)
