@@ -42,7 +42,7 @@
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-huque-dane-client-cert-01" ipr="trust200902" updates="6698">
+<rfc category="std" docName="draft-huque-dane-client-cert-02" ipr="trust200902" updates="6698">
   <!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
      you can add the attributes updates="NNNN" and obsoletes="NNNN" 
@@ -77,7 +77,7 @@
       </address>
     </author>
 
-    <date day="05" month="July" year="2015" />
+    <date day="05" month="January" year="2016" />
 
     <!-- Meta-data Declarations -->
 
@@ -217,38 +217,42 @@ _service.[client-domain-name]
     <section title="Signaling the Client's DANE Identity in TLS"
 	     anchor="client_signal">
       <t>
-	The protocol described in the initial version of this document
-	assumes either that client authentication is mandatory, or that 
-	where it is optional, clients can handle a Client Certificate 
-	Request message from the server without issues if they are not 
-	equipped with client certificates. Technically, the TLS protocol 
-	specification states that the client may respond with a Client 
-	Certificate message with no certificate, and that the server may 
-	at its discretion continue the handshake without client 
-	authentication. However in practice, problems may arise. There
-	are deployed client software implementations that do not react 
-	gracefully when encountering a certificate request that they did 
-	not expect. 
+	Ideally, the client should explicitly signal its DANE
+	identity via the TLS protocol.
       </t>
       <t>
-	More importantly, a server may want an explicit indication
-	from the client that it has a DANE record, so as to avoid 
-	unnecessary DNS queries in-band with the TLS handshake for
-	clients that don't support this.
+	The most important reason is that the server may want an 
+	explicit indication from the client that it has a DANE record, 
+	so as to avoid unnecessary DNS queries in-band with the TLS 
+	handshake for clients that don't support this. Technically,
+	this indication could come in the form of a new X.509 certificate
+	extension but there are a number of additional scenarios where
+	this would not work.
       </t>
       <t>
-	Hence, to address this issue generally, a client identity 
-	signaling solution will need to be devised, whereby the 
-	client indicates its DANE identity (i.e. its domain name 
-	identity and the fact that this identity has an associated 
-	TLSA record) to the server. Application specific protocol 
-	enhancements are one way to achieve this, e.g. a new SMTP 
-	command. A more general way would be to develop a new TLS 
-	extension to convey this information.
+	Where client certificate authentication is optional, in
+	response to the server's Certificate Request message, the
+	client can respond with a Client Certificate message with 
+	no certificate, and the server may at its discretion continue
+	the handshake without client authentication. However, in 
+	practice, problems may arise. There are deployed client 
+	software implementations that do not react gracefully when 
+	encountering a certificate request message from the TLS server 
+	that they did not expect.
       </t>
       <t>
-	[Another internet draft is currently being written to define 
-	such a TLS extension to convey DANE client identity.]
+	DANE client authentication using raw public keys needs a separate
+	mechanism to convey the domain name identity to the TLS server.
+      </t>
+      <t>
+	Hence, to address this issue generally, a new client identity 
+	signaling solution is needed, whereby the client indicates 
+	its DANE identity (i.e. its domain name identity and the fact 
+	that this identity has an associated TLSA record) to the server.
+	A new TLS extension <xref target="TLSCLIENTID">to convey such
+	an identity</xref> has been developed for this purpose. 
+	Client implementations of this specification SHOULD use this 
+	extension.
       </t>
     </section>
 
@@ -297,13 +301,6 @@ _localsvc.client2.example.com. IN TLSA (
     <section title="Changes to Client and Server behavior" anchor="changes">
 
       <t>
-	[Note: As the client identity signaling solution is developed, 
-	 this section will undergo enhancements to use it. A future
-	 revision of this document will explicitly address the additional
-	 use case of raw public keys instead of X.509 certificates.]
-      </t>
-
-      <t>
 	A TLS Client conforming to this specification MUST
 	have a signed DNS TLSA record published corresponding to 
 	its DNS name and X.509 certificate. The client 
@@ -315,27 +312,41 @@ _localsvc.client2.example.com. IN TLSA (
       </t>
 
       <t>
+	Additionally the client SHOULD use the <xref target="TLSCLIENTID">
+	TLS DANE Client Identity extension</xref> to explicitly indicate
+	its DNS name.
+      </t>
+
+      <t>
 	A TLS Server implementing this specification performs the 
 	following steps:
 
-	<list counter="reqs" hangIndent="4" style="format S%d">
+	<list style="symbols">
 
 	  <t>Request a client certificate in the TLS handshake (the
 	  "Client Certificate Request" message).</t>
 
-	  <t>Extract the client identity from the Subject Alternative
+	  <t>If the client has sent the DANE Client Identity extension,
+	  then extract the client's domain name from the extension.
+	  Otherwise, extract the client identity from the Subject Alternative
 	  Name extension's dNSName or SRVName type in the client certificate.
 	  (If no client certificate is provided, then the server may
 	  terminate the connection, or at its discretion may continue 
 	  the handshake without client authentication.)</t>
 
+	  <t>If the TLS DANE client identity extension was present, make
+	  sure the indicated name is present in the client certificate's
+	  dNSName or SRVName types.</t>
+
 	  <t>Construct the DNS query name for the corresponding TLSA
-	  record. For dNSName, the underscored application service label
-	  is prepended to the domain name, corresponding to the application
-	  in use. For SRVName, the DNS query name is identical to the
-	  content of the SRVName identifier. See 
-	  <xref target="owner_format" /> for the proposed owner name 
-	  format.</t>
+	  record. If the TLS DANE client identity extension was present,
+	  then this name should be used. Otherwise identities from the 
+	  client certificate are used. For dNSName, the underscored 
+	  application service label is prepended to the domain name, 
+	  corresponding to the application in use. For SRVName, the 
+	  DNS query name is identical to the content of the SRVName 
+	  identifier. See <xref target="owner_format" /> for the proposed 
+	  owner name format.</t>
 
 	  <t>Look up the TLSA record in the DNS. The response MUST be
 	  cryptographically validated using DNSSEC. The server could
@@ -358,22 +369,22 @@ _localsvc.client2.example.com. IN TLSA (
       </t>
 
       <t>
-	If the presented client certificate has  multiple
-	distinct reference identifier types (e.g. a dNSName, and an
-	rfc822Name) then TLS servers configured to perform DANE 
-	authentication according to this specification should only 
-	examine and authenticate the dNSName or SRVName identity. 
-	If the certificate contains both dNSName and SRVName identities,
-	SRVName should be preferred. See 
+	If the DANE client identity extension is not present, and the 
+	presented client certificate has  multiple distinct reference 
+	identifier types (e.g. a dNSName, and an rfc822Name) then 
+	TLS servers configured to perform DANE authentication according 
+	to this specification should only examine and authenticate the 
+	dNSName or SRVName identity. If the certificate contains both 
+	dNSName and SRVName identities, SRVName should be preferred. See 
 	<xref target="RFC6125" /> for a description of reference
 	identifiers and matching rules.
       </t>
 
       <t>
 	If the presented client certificate has multiple dNSName
-	or SRVName identities, then the client MUST use an identity 
-	signalling mechanism to indicate the intended name to the 
-	server.
+	or SRVName identities, then the client MUST use the TLS
+	DANE client identity extension to unambiguously indicate
+	its intended name to the server.
       </t>
 
       <t>
@@ -400,27 +411,13 @@ _localsvc.client2.example.com. IN TLSA (
 
     <section title="Raw Public Keys" anchor="raw_keys">
       <t>
-	This specification can also support the use of 
+	This specification also support the use of 
 	<xref target="RFC7250">raw public keys in TLS</xref>.
-	This use case employs only usage mode 3 (DANE-EE) and a
-	selector value of 1 (SPKI) in the DANE TLSA record, as 
-	described in <xref target="DANEOPS" />. It requires the
-	use of the new client identity signaling solution discussed
-	previously.
-      </t>
-    </section>
-
-
-    <section title="Open Issues" anchor="open_issues">
-      <t>
-	Should this document also consider client identities in the form
-	of e-mail addresses? The use case might be an SMTP client talking
-	to an SMTP submission server. In that case, the email address of a
-	user would most likely be conveyed in the certificate in a subject 
-	alt name rfc822Name type. The corresponding TLSA record would have 
-	to then have an owner name format similar to the OPENPGPKEY or SMIMEA
-	records. This use case might be best left to the SMIMEA specification 
-	to consider.
+	This mode of operation requires the use of the TLS
+	DANE Client Identity extension. It also employs only
+	usage mode 3 (DANE-EE) and a selector value of 1 (SPKI) 
+	in the DANE TLSA record, as described in 
+	<xref target="DANEOPS" />.
       </t>
     </section>
 
@@ -461,6 +458,14 @@ _localsvc.client2.example.com. IN TLSA (
       &RFC6698;
       &RFC7218;
       &RFC7250;
+      <reference anchor="TLSCLIENTID"
+	target="https://tools.ietf.org/html/draft-huque-tls-dane-clientid">
+	<front>
+          <title>TLS Extension for DANE Client Identity</title>
+          <author fullname="Shumon Huque" initials="S" surname="Huque" />
+          <author fullname="Viktor Dukhovni" initials="V" surname="Dukhovni" />
+	</front>
+      </reference>
     </references>
 
     <references title="Informative References">
@@ -472,13 +477,13 @@ _localsvc.client2.example.com. IN TLSA (
           <author fullname="IANA" surname="IANA" />
 	</front>
       </reference>
-    <reference anchor="DANEOPS"
-      target="https://tools.ietf.org/html/draft-ietf-dane-ops">
-      <front>
-        <title>Updates to and Operational Guidance for the DANE Protocol</title>
-        <author fullname="Viktor Dukhovni" initials="V" surname="Dukhovni" />
-      </front>
-    </reference>
+      <reference anchor="DANEOPS"
+	target="https://tools.ietf.org/html/draft-ietf-dane-ops">
+	<front>
+          <title>Updates to and Operational Guidance for the DANE Protocol</title>
+          <author fullname="Viktor Dukhovni" initials="V" surname="Dukhovni" />
+	</front>
+      </reference>
     </references>
   </back>
 
