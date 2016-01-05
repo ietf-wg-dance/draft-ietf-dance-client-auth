@@ -52,7 +52,7 @@
   <!-- ***** FRONT MATTER ***** -->
 
   <front>
-    <title abbrev="TLSA client certificates">Client Certificates in DANE TLSA Records</title>
+    <title abbrev="TLSA client authentication">TLS Client Authentication via DANE TLSA records</title>
 
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Verisign Labs</organization>
