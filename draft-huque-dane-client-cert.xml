@@ -14,6 +14,7 @@
 <!ENTITY RFC6698 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.6698.xml">
 <!ENTITY RFC7218 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7218.xml">
 <!ENTITY RFC7250 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7250.xml">
+<!ENTITY RFC7671 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7671.xml">
 <!ENTITY I-D.narten-iana-considerations-rfc2434bis SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.narten-iana-considerations-rfc2434bis.xml">
 ]>
 
@@ -92,12 +93,13 @@
     <keyword>Raw Public Key</keyword>
 
     <abstract>
-      <t>The current <xref target="RFC6698">DNS TLSA record format</xref>
-      describes how to specify TLS server certificates or their public keys 
-      in the DNS. This document makes a narrowly focused update to RFC 6698.
-      It describes how to additionally use the TLSA record to specify 
-      client certificates, and also the rules and considerations for using 
-      them with the TLS protocol.
+      <t>The DANE TLSA protocol <xref target="RFC6698"/> <xref target="RFC7671"/>
+      describes how to publish Transport Layer Security (TLS) server 
+      certificates or public keys in the DNS. This document updates RFC 
+      6698 and RFC 7671. 
+      It describes how to additionally use the TLSA record to publish
+      client certificates or public keys, and also the rules and 
+      considerations for using them with TLS.
       </t>
     </abstract>
   </front>
@@ -417,7 +419,7 @@ _localsvc.client2.example.com. IN TLSA (
 	DANE Client Identity extension. It also employs only
 	usage mode 3 (DANE-EE) and a selector value of 1 (SPKI) 
 	in the DANE TLSA record, as described in 
-	<xref target="DANEOPS" />.
+	<xref target="RFC7671" />.
       </t>
     </section>
 
@@ -458,6 +460,7 @@ _localsvc.client2.example.com. IN TLSA (
       &RFC6698;
       &RFC7218;
       &RFC7250;
+      &RFC7671;
       <reference anchor="TLSCLIENTID"
 	target="https://tools.ietf.org/html/draft-huque-tls-dane-clientid">
 	<front>
@@ -477,13 +480,7 @@ _localsvc.client2.example.com. IN TLSA (
           <author fullname="IANA" surname="IANA" />
 	</front>
       </reference>
-      <reference anchor="DANEOPS"
-	target="https://tools.ietf.org/html/draft-ietf-dane-ops">
-	<front>
-          <title>Updates to and Operational Guidance for the DANE Protocol</title>
-          <author fullname="Viktor Dukhovni" initials="V" surname="Dukhovni" />
-	</front>
-      </reference>
+
     </references>
   </back>
 
