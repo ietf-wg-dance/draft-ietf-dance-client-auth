@@ -198,7 +198,8 @@ _service.[client-domain-name]
     <section title="Client Identifiers in X.509 certificates"
 	     anchor="cert_id">
       <t>
-	If the TLS DANE Client Identity extension is not being used, the 
+	If the TLS DANE Client Identity extension 
+	(see <xref target="client_signal" />) is not being used, the 
 	client certificate MUST have have the client's DNS name 
 	specified in the Subject Alternative Name extension's dNSName 
 	type. Or, if an application specific identity is preferred or
@@ -356,7 +357,7 @@ _localsvc.client2.example.com. IN TLSA (
 	  configured to trust responses obtained via a validating 
 	  resolver to which it has a secure connection.</t>
 
-	  <t>Extract the RDATA of the TLSA record and match it to the
+	  <t>Extract the RDATA of the TLSA records and match them to the
 	  presented client certificate according to the rules specified
 	  in the DANE TLS protocol <xref target="RFC6698"/>
 	  <xref target="RFC7671"/>.
