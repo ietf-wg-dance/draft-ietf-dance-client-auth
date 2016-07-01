@@ -62,14 +62,6 @@
       </address>
     </author>
 
-    <author fullname="Dan James" initials="D." surname="James">
-      <organization>Verisign, Inc.</organization>
-      <address>
-        <email>djames@verisign.com</email>
-        <!-- uri and facsimile elements may also be added -->
-      </address>
-    </author>
-
     <author fullname="Viktor Dukhovni" initials="V." surname="Dukhovni">
       <organization>Two Sigma</organization>
       <address>
@@ -78,7 +70,7 @@
       </address>
     </author>
 
-    <date day="05" month="January" year="2016" />
+    <date day="30" month="June" year="2016" />
 
     <!-- Meta-data Declarations -->
 
@@ -270,13 +262,16 @@ _service.[client-domain-name]
       <t>
 	An example TLSA record for the client "device1.example.com." and
 	the application "smtp-client". This record specifies the SHA-256 hash
-	of a PKIX CA certificate to authenticate the client's certificate.
+	of the subject public key component of the end-entity certificate 
+	corresponding to the client. The certificate usage for this record
+	is 3 (DANE-EE) and thus is validated in accordance with section
+	5.1 of RFC 7671.
       </t>
       <figure>
         <artwork><![CDATA[
 
 _smtp-client.device1.example.com. IN TLSA (
-   0 0 1 d2abde240d7cd3ee6b4b28c54df034b9
+   3 1 1 d2abde240d7cd3ee6b4b28c54df034b9
          7983a1d16e8a410e4561cb106618e971 )
   	]]></artwork>
       </figure>
@@ -284,16 +279,16 @@ _smtp-client.device1.example.com. IN TLSA (
       <t>
 	An example TLSA record for the client "client2.example.com." and
 	the application "localsvc". This record specifies the SHA-512 hash 
-	of the subject public key component of the client's certificate. 
-	The certificate usage for this record is 3 (DANE-EE) and thus is
-	validated in accordance with section 5.1 of RFC 7671.
+	of the subject public key component of a public certification
+	authority that has issued the client's certificate.
+	The certificate usage for this record is 0 (PKIX-TA).
       </t>
 
       <figure>
         <artwork><![CDATA[
 
 _localsvc.client2.example.com. IN TLSA (
-   3 1 2 0f8b48ff5fd94117f21b6550aaee89c8
+   0 1 2 0f8b48ff5fd94117f21b6550aaee89c8
          d8adbc3f433c8e587a85a14e54667b25
          f4dcd8c4ae6162121ea9166984831b57
          b408534451fd1b9702f8de0532ecd03c )
@@ -430,8 +425,8 @@ _localsvc.client2.example.com. IN TLSA (
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t>
 	This document benefited from discussions with the following 
-	people: Duane Wessels, Allison Mankin, Casey Deccio, and Warren 
-	Kumari.
+	people: Dan James, Duane Wessels, Allison Mankin, Casey Deccio, 
+	and Warren Kumari.
       </t>
     </section>
 
