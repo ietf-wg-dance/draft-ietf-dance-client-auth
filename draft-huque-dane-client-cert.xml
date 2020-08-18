@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="US-ASCII"?>
 <!DOCTYPE rfc SYSTEM "rfc2629.dtd" [
 <!-- One method to get references from the online citation libraries.
-     There has to be one entity for each item to be referenced. 
+     There has to be one entity for each item to be referenced.
      An alternate method (rfc include) is described in the references. -->
 
 <!ENTITY RFC3552 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.3552.xml">
@@ -15,12 +15,13 @@
 <!ENTITY RFC7218 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7218.xml">
 <!ENTITY RFC7250 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7250.xml">
 <!ENTITY RFC7671 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.7671.xml">
+<!ENTITY RFC8446 SYSTEM "http://xml.resource.org/public/rfc/bibxml/reference.RFC.8446.xml">
 <!ENTITY I-D.narten-iana-considerations-rfc2434bis SYSTEM "http://xml.resource.org/public/rfc/bibxml3/reference.I-D.narten-iana-considerations-rfc2434bis.xml">
 ]>
 
 <?xml-stylesheet type='text/xsl' href='rfc2629.xslt' ?>
 <!-- used by XSLT processors -->
-<!-- For a complete list and description of processing instructions (PIs), 
+<!-- For a complete list and description of processing instructions (PIs),
      please see http://xml.resource.org/authoring/README.html. -->
 <!-- Below are generally applicable Processing Instructions (PIs) that most I-Ds might want to use.
      (Here they are set differently than their defaults in xml2rfc v1.32) -->
@@ -36,17 +37,17 @@
 <!-- use symbolic references tags, i.e, [RFC2119] instead of [1] -->
 <?rfc sortrefs="yes" ?>
 <!-- sort the reference entries alphabetically -->
-<!-- control vertical white space 
+<!-- control vertical white space
      (using these PIs as follows is recommended by the RFC Editor) -->
 <?rfc compact="yes" ?>
 <!-- do not start each main section on a new page -->
 <?rfc subcompact="no" ?>
 <!-- keep one blank line between list items -->
 <!-- end of list of popular I-D processing instructions -->
-<rfc category="std" docName="draft-huque-dane-client-cert-03" ipr="trust200902" updates="6698,7671">
+<rfc category="std" docName="draft-huque-dane-client-cert-04" ipr="trust200902" updates="6698,7671">
   <!-- category values: std, bcp, info, exp, and historic
      ipr values: full3667, noModification3667, noDerivatives3667
-     you can add the attributes updates="NNNN" and obsoletes="NNNN" 
+     you can add the attributes updates="NNNN" and obsoletes="NNNN"
      they will automatically be output with "(if approved)" -->
 
   <!-- ***** FRONT MATTER ***** -->
@@ -70,7 +71,7 @@
       </address>
     </author>
 
-    <date day="19" month="February" year="2017" />
+    <date day="17" month="August" year="2020" />
 
     <!-- Meta-data Declarations -->
 
@@ -86,11 +87,11 @@
 
     <abstract>
       <t>The DANE TLSA protocol <xref target="RFC6698"/> <xref target="RFC7671"/>
-      describes how to publish Transport Layer Security (TLS) server 
-      certificates or public keys in the DNS. This document updates RFC 
-      6698 and RFC 7671. 
+      describes how to publish Transport Layer Security (TLS) server
+      certificates or public keys in the DNS. This document updates RFC
+      6698 and RFC 7671.
       It describes how to additionally use the TLSA record to publish
-      client certificates or public keys, and also the rules and 
+      client certificates or public keys, and also the rules and
       considerations for using them with TLS.
       </t>
     </abstract>
@@ -102,15 +103,14 @@
 
     <section title="Introduction and Motivation">
       <t>
-	The <xref target="RFC5246">Transport Layer Security (TLS) 
-	protocol</xref> optionally supports the
-	authentication of clients using 
-	<xref target="RFC5280">X.509 certificates</xref> or
+	The Transport Layer Security (TLS) protocol <xref target="RFC5246"/>
+        <xref target="RFC8446"/> optionally supports the authentication of
+        clients using <xref target="RFC5280">X.509 certificates</xref> or
 	<xref target="RFC7250">raw public keys</xref>. TLS applications
-	that perform DANE authentication of servers using TLSA records 
+	that perform DANE authentication of servers using TLSA records
 	may also desire to authenticate clients using the same mechanism,
-	especially if the client identity is in the form of or can be 
-	represented by a DNS domain name. Some design patterns from the 
+	especially if the client identity is in the form of or can be
+	represented by a DNS domain name. Some design patterns from the
 	Internet of Things (IoT) make use of this form of authentication,
 	where large networks of physical objects identified by DNS
 	names may authenticate themselves using TLS to centralized device
@@ -118,8 +118,8 @@
       </t>
       <t>
 	In this document, the term TLS is used generically to describe
-	both the TLS and 
-	<xref target="RFC6347">DTLS (Datagram Transport Layer Security) 
+	both the TLS and
+	<xref target="RFC6347">DTLS (Datagram Transport Layer Security)
 	</xref> protocols.
       </t>
     </section>
@@ -155,8 +155,8 @@ _service.[client-domain-name]
 	the <xref target="SRVREG">IANA Service Name Registry</xref>.
       </t>
       <t>
-	The RDATA or data field portion of the TLSA record is formed 
-	exactly as specified in RFC 6698 and RFC 7671, and carries the 
+	The RDATA or data field portion of the TLSA record is formed
+	exactly as specified in RFC 6698 and RFC 7671, and carries the
 	same meaning.
       </t>
     </section>
@@ -168,21 +168,22 @@ _service.[client-domain-name]
       </t>
       <t>
 	The client is assigned an identity corresponding to a DNS
-	domain name. This domain name doesn't necessarily have any 
+	domain name. This domain name doesn't necessarily have any
 	relation to its network layer addresses. Clients often
-	have dynamic or unpredictable addresses, and may move around 
-	the network, so tying their identity to network addresses is 
+	have dynamic or unpredictable addresses, and may move around
+	the network, so tying their identity to network addresses is
 	not feasible or wise in the general case.
       </t>
       <t>
-	The client generates (or has generated for it) a private and 
+	The client generates (or has generated for it) a private and
 	public key pair. Where client certificates are being used, the
-	client also has a certificate binding the name to its public key. 
-	The certificate or public key has a corresponding TLSA record 
+	client also has a certificate binding the name to its public key.
+	The certificate or public key has a corresponding TLSA record
 	published in the DNS, which allows it to be authenticated
 	directly via the DNS (using the DANE-TA or DANE-EE certificate
-	usage modes) or via a PKIX public CA system constraint (using 
-	the PKIX-TA or PKIX-EE certificate usage modes).
+	usage modes) or via a PKIX public CA system constraint if the
+        client's certificate was issued by a public CA (using  the PKIX-TA
+        or PKIX-EE DANE usage modes).
       </t>
     </section>
 
@@ -190,65 +191,55 @@ _service.[client-domain-name]
     <section title="Client Identifiers in X.509 certificates"
 	     anchor="cert_id">
       <t>
-	If the TLS DANE Client Identity extension 
-	(see <xref target="client_signal" />) is not being used, the 
-	client certificate MUST have have the client's DNS name 
-	specified in the Subject Alternative Name extension's dNSName 
+	If the TLS DANE Client Identity extension
+	(see <xref target="client_signal" />) is not being used, the
+	client certificate MUST have have the client's DNS name
+	specified in the Subject Alternative Name extension's dNSName
 	type. Or, if an application specific identity is preferred or
-	needed, the SRV-ID (PKIX OtherName SRVName) MUST be used to 
+	needed, the SRV-ID (PKIX OtherName SRVName) MUST be used to
 	specify the application service and the client's name, e.g.
 	"_smtp-client.device1.example.com". See <xref target="RFC6125" />
-	and <xref target="RFC4985" /> for a discussion of application 
+	and <xref target="RFC4985" /> for a discussion of application
 	specific identifiers in X.509 certificates.
       </t>
       <t>
 	If the TLS DANE Client Identity extension is in use, then with
 	DANE-EE(3), the subject name need not be present in the certificate.
       </t>
+      <t>
+        *** TODO: Should the URI Subject Alternative Name form be allowed
+        here too?
+      </t>
+
     </section>
 
 
     <section title="Signaling the Client's DANE Identity in TLS"
 	     anchor="client_signal">
       <t>
-	In general, the client SHOULD explicitly signal its DANE
-	identity via the TLS protocol.
+	The client SHOULD explicitly signal that it has a DANE identity.
+        The most important reason is that the server may want an explicit
+        indication from the client that it has a DANE record, so as to
+        avoid unnecessary DNS queries in-band with the TLS handshake.
       </t>
       <t>
-	The most important reason is that the server may want an 
-	explicit indication from the client that it has a DANE record, 
-	so as to avoid unnecessary DNS queries in-band with the TLS 
-	handshake for clients that don't support this. In principle,
-	this indication could come in the form of a new X.509 certificate
-	extension but there are a number of additional scenarios where
-	this would not work.
+        The <xref target="TLSCLIENTID">DANE Client Identity TLS
+        extension</xref> is used for this purpose. This extension can also
+        be used to convey the actual DANE client identity (i.e. domain name)
+        that the TLS server should attempt to authenticate. This is required
+        when using TLS raw public key authentication, since there is no
+        client certificate from which to extract the client's DNS identity.
+        It is also helpful when the client certificate contains multiple
+        identities, and only a specific one has a DANE record.
       </t>
       <t>
-	Where client certificate authentication is optional, in
-	response to the server's Certificate Request message, the
-	client can respond with a Client Certificate message with 
-	no certificate, and the server may at its discretion continue
-	the handshake without client authentication. However, in 
-	practice, problems may arise. There are deployed client 
-	software implementations that do not react gracefully when 
-	encountering a certificate request message from the TLS server 
-	that they did not expect.
-      </t>
-      <t>
-	DANE client authentication using raw public keys needs a separate
-	mechanism to convey the domain name identity to the TLS server.
-      </t>
-      <t>
-	Hence, to address this issue generally, a new client identity 
-	signaling solution is needed, whereby the client indicates 
-	its DANE identity (i.e. its domain name identity and the fact 
-	that this identity has an associated TLSA record) to the server.
-	A new TLS extension <xref target="TLSCLIENTID">to convey such
-	an identity</xref> has been developed for this purpose. 
-	Client implementations of this specification SHOULD use this 
-	extension. This extension SHOULD also elicit a "Certificate
-	Request" from servers that implement this protocol, and don't
-	require client certificates otherwise.
+	An additional case where such client signaling is helpful, is
+        one where DANE client authentication is optional, and there is a
+        population of buggy client software that does not react gracefully
+        to receipt of a Certificate Request message from the TLS server.
+        This extension allows TLS servers to deal with this situation by
+        selectively sending a Certificate Request message only to clients
+        that have sent this extension.
       </t>
     </section>
 
@@ -256,13 +247,13 @@ _service.[client-domain-name]
     <section title="Example TLSA records for clients">
 
       <t>
-	The following examples are provided in the textual presentation 
+	The following examples are provided in the textual presentation
 	format of the TLSA record.
       </t>
       <t>
 	An example TLSA record for the client "device1.example.com." and
 	the application "smtp-client". This record specifies the SHA-256 hash
-	of the subject public key component of the end-entity certificate 
+	of the subject public key component of the end-entity certificate
 	corresponding to the client. The certificate usage for this record
 	is 3 (DANE-EE) and thus is validated in accordance with section
 	5.1 of RFC 7671.
@@ -278,7 +269,7 @@ _smtp-client.device1.example.com. IN TLSA (
 
       <t>
 	An example TLSA record for the client "client2.example.com." and
-	the application "localsvc". This record specifies the SHA-512 hash 
+	the application "localsvc". This record specifies the SHA-512 hash
 	of the subject public key component of a public certification
 	authority that has issued the client's certificate.
 	The certificate usage for this record is 0 (PKIX-TA).
@@ -301,26 +292,27 @@ _localsvc.client2.example.com. IN TLSA (
 
       <t>
 	A TLS Client conforming to this specification MUST
-	have a signed DNS TLSA record published corresponding to 
-	its DNS name and X.509 certificate or public key. The client 
-	presents this certificate or public key in the TLS handshake 
+	have a signed DNS TLSA record published corresponding to
+	its DNS name and X.509 certificate or public key. The client
+	presents this certificate or public key in the TLS handshake
 	with the server. The client should not offer ciphersuites
 	that are incompatible with its certificate or public key.
 	If the client's certificate has a DANE record with a certificate
-	usage other than DANE-EE, then the presented client certificate 
-	MUST have have the client's DNS name specified either in the 
-	Subject Alternative Name extension's dNSName type, or the 
+	usage other than DANE-EE, then the presented client certificate
+	MUST have have the client's DNS name specified either in the
+	Subject Alternative Name extension's dNSName type, or the
 	SRVName type.
       </t>
 
       <t>
-	Additionally the client SHOULD use the <xref target="TLSCLIENTID">
-	TLS DANE Client Identity extension</xref> to explicitly indicate
-	its DNS name.
+	Additionally, when using raw public key authentication, the client
+        MUST send the <xref target="TLSCLIENTID">TLS DANE Client Identity
+        extension</xref> in its Client Hello message. When using X.509
+        certificate authentication, it SHOULD send this extension.
       </t>
 
       <t>
-	A TLS Server implementing this specification performs the 
+        A TLS Server implementing this specification performs the
 	following steps:
 
 	<list style="symbols">
@@ -338,18 +330,18 @@ _localsvc.client2.example.com. IN TLSA (
 
 	  <t>Construct the DNS query name for the corresponding TLSA
 	  record. If the TLS DANE client identity extension was present,
-	  then this name should be used. Otherwise, identities from the 
-	  client certificate are used. For dNSName, the underscored 
-	  application service label is prepended to the domain name, 
-	  corresponding to the application in use. For SRVName, the 
-	  DNS query name is identical to the content of the SRVName 
-	  identifier. See <xref target="owner_format" /> for the proposed 
+	  then this name should be used. Otherwise, identities from the
+	  client certificate are used. For dNSName, the underscored
+	  application service label is prepended to the domain name,
+	  corresponding to the application in use. For SRVName, the
+	  DNS query name is identical to the content of the SRVName
+	  identifier. See <xref target="owner_format" /> for the proposed
 	  owner name format.</t>
 
 	  <t>Look up the TLSA record set in the DNS. The response MUST be
 	  cryptographically validated using DNSSEC. The server could
 	  perform the DNSSEC validation itself. It could also be
-	  configured to trust responses obtained via a validating 
+	  configured to trust responses obtained via a validating
 	  resolver to which it has a secure connection.</t>
 
 	  <t>Extract the RDATA of the TLSA records and match them to the
@@ -363,7 +355,7 @@ _localsvc.client2.example.com. IN TLSA (
 	  access to resources as a generic unauthenticated user).</t>
 
 	  <t>If there are multiple records in the TLSA record set,
-	  then the client is authenticated as long as at least one of 
+	  then the client is authenticated as long as at least one of
 	  the TLSA records matches, subject to RFC7671 digest agility,
 	  which SHOULD be implemented.</t>
 
@@ -371,13 +363,13 @@ _localsvc.client2.example.com. IN TLSA (
       </t>
 
       <t>
-	If the DANE Client Identity extension is not present, and the 
-	presented client certificate has  multiple distinct reference 
-	identifier types (e.g. a dNSName, and an rfc822Name) then 
-	TLS servers configured to perform DANE authentication according 
-	to this specification should only examine and authenticate the 
-	dNSName or SRVName identity. If the certificate contains both 
-	dNSName and SRVName identities, SRVName should be preferred. See 
+	If the DANE Client Identity extension is not present, and the
+	presented client certificate has multiple distinct reference
+	identifier types (e.g. a dNSName, and an rfc822Name) then
+	TLS servers configured to perform DANE authentication according
+	to this specification should only examine and authenticate the
+	dNSName or SRVName identities. If the certificate contains both
+	dNSName and SRVName identities, SRVName should be preferred. See
 	<xref target="RFC6125" /> for a description of reference
 	identifiers and matching rules.
       </t>
@@ -391,10 +383,10 @@ _localsvc.client2.example.com. IN TLSA (
 
       <t>
 	Specific applications may be designed to require additional
-	validation steps. For example, a server might want to verify the 
-	client's IP address is associated with the certificate in some 
-	manner, e.g. by confirming that a secure reverse DNS lookup of 
-	that address ties it back to the same domain name, or by requiring 
+	validation steps. For example, a server might want to verify the
+	client's IP address is associated with the certificate in some
+	manner, e.g. by confirming that a secure reverse DNS lookup of
+	that address ties it back to the same domain name, or by requiring
 	an iPAddress component to be included in the certificate. Such
 	details are outside the scope of this document, and should be
 	outlined in other documents specific to the applications that
@@ -404,7 +396,7 @@ _localsvc.client2.example.com. IN TLSA (
       <t>
 	Servers may have their own whitelisting and authorization rules
 	for which certificates they accept. For example a TLS server may
-	be configured to only allow TLS sessions from clients with 
+	be configured to only allow TLS sessions from clients with
 	certificate identities within a specific domain or set of domains.
       </t>
 
@@ -414,9 +406,9 @@ _localsvc.client2.example.com. IN TLSA (
     <section title="Raw Public Keys" anchor="raw_keys">
       <t>
 	When using <xref target="RFC7250">raw public keys in TLS</xref>,
-	this specification requires the use of the TLS DANE Client 
+	this specification requires the use of the TLS DANE Client
 	Identity extension. The associated DANE TLSA records employ only
-	certificate usage 3 (DANE-EE) and a selector value of 1 (SPKI), 
+	certificate usage 3 (DANE-EE) and a selector value of 1 (SPKI),
 	as described in <xref target="RFC7671" />.
       </t>
     </section>
@@ -424,9 +416,7 @@ _localsvc.client2.example.com. IN TLSA (
 
     <section anchor="Acknowledgements" title="Acknowledgements">
       <t>
-	This document benefited from discussions with the following 
-	people: Dan James, Duane Wessels, Allison Mankin, Casey Deccio, 
-	and Warren Kumari.
+        TBD.
       </t>
     </section>
 
@@ -436,11 +426,11 @@ _localsvc.client2.example.com. IN TLSA (
 
     <section anchor="Security" title="Security Considerations">
       <t>
-	This document makes a narrow update to RFC 6698 by defining the 
-	use of the TLSA record for client TLS certificates. There are 
-	no security considerations for this document beyond those described 
-	in RFC 6698 and RFC 7671 and in the specifications for TLS and DTLS 
-	[RFC5246], [RFC6347].
+	This document updates RFC 6698 by defining the use of the TLSA
+        record for client TLS certificates. There are no security
+        considerations for this document beyond those described
+	in RFC 6698 and RFC 7671 and in the specifications for TLS and
+        DTLS [RFC8446], [RFC5246], [RFC6347].
       </t>
     </section>
   </middle>
@@ -449,16 +439,15 @@ _localsvc.client2.example.com. IN TLSA (
 
   <back>
     <references title="Normative References">
-      &RFC4035;
       &RFC4985;
       &RFC5246;
       &RFC5280;
       &RFC6125;
       &RFC6347;
       &RFC6698;
-      &RFC7218;
       &RFC7250;
       &RFC7671;
+      &RFC8446;
       <reference anchor="TLSCLIENTID"
 	target="https://tools.ietf.org/html/draft-huque-tls-dane-clientid">
 	<front>
@@ -470,7 +459,6 @@ _localsvc.client2.example.com. IN TLSA (
     </references>
 
     <references title="Informative References">
-      &RFC3552;
       <reference anchor="SRVREG"
         target="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.txt">
 	<front>
