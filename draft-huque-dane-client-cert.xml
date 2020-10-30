@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-huque-dane-client-cert-04"
+        docName="draft-huque-dane-client-cert-05"
         ipr="trust200902" updates="6698,7671" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -56,7 +56,15 @@
         <!-- uri and facsimile elements may also be added -->
       </address>
     </author>
-    <date day="8" month="October" year="2020"/>
+    <author fullname="Ash Wilson" initials="A." surname="Wilson">
+      <organization>Valimail</organization>
+      <address>
+        <email>ash.wilson@valimail.com</email>
+        <!-- uri and facsimile elements may also be added -->
+      </address>
+    </author>
+
+    <date day="30" month="October" year="2020"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
