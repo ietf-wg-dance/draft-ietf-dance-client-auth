@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-huque-dane-client-cert-07"
+        docName="draft-huque-dane-client-cert-08"
         ipr="trust200902" updates="6698,7671" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -64,7 +64,7 @@
       </address>
     </author>
 
-    <date day="10" month="November" year="2021"/>
+    <date day="14" month="February" year="2022"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
