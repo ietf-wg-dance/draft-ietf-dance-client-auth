@@ -1,5 +1,5 @@
 SOURCE  = \
-	draft-huque-dane-client-cert
+	draft-ietf-dance-client-auth
 
 all:	$(SOURCE).txt $(SOURCE).html
 
