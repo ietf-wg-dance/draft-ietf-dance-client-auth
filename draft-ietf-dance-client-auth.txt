@@ -6,11 +6,11 @@ Internet Engineering Task Force                                 S. Huque
 Internet-Draft                                                Salesforce
 Updates: 6698, 7671 (if approved)                            V. Dukhovni
 Intended status: Standards Track                               Two Sigma
-Expires: 13 November 2023                                    12 May 2023
+Expires: 21 December 2023                                   19 June 2023
 
 
             TLS Client Authentication via DANE TLSA records
-                    draft-ietf-dance-client-auth-02
+                    draft-ietf-dance-client-auth-03
 
 Abstract
 
@@ -36,7 +36,7 @@ Status of This Memo
    time.  It is inappropriate to use Internet-Drafts as reference
    material or to cite them other than as "work in progress."
 
-   This Internet-Draft will expire on 13 November 2023.
+   This Internet-Draft will expire on 21 December 2023.
 
 Copyright Notice
 
@@ -53,9 +53,9 @@ Copyright Notice
 
 
 
-Huque & Dukhovni        Expires 13 November 2023                [Page 1]
+Huque & Dukhovni        Expires 21 December 2023                [Page 1]
 
-Internet-Draft         TLSA client authentication               May 2023
+Internet-Draft         TLSA client authentication              June 2023
 
 
    This document is subject to BCP 78 and the IETF Trust's Legal
@@ -109,9 +109,9 @@ Table of Contents
 
 
 
-Huque & Dukhovni        Expires 13 November 2023                [Page 2]
+Huque & Dukhovni        Expires 21 December 2023                [Page 2]
 
-Internet-Draft         TLSA client authentication               May 2023
+Internet-Draft         TLSA client authentication              June 2023
 
 
 2.  Associating Client Identities in TLSA Records
@@ -165,9 +165,9 @@ Internet-Draft         TLSA client authentication               May 2023
 
 
 
-Huque & Dukhovni        Expires 13 November 2023                [Page 3]
+Huque & Dukhovni        Expires 21 December 2023                [Page 3]
 
-Internet-Draft         TLSA client authentication               May 2023
+Internet-Draft         TLSA client authentication              June 2023
 
 
    The client is assigned an identity corresponding to a DNS domain
@@ -221,9 +221,9 @@ Internet-Draft         TLSA client authentication               May 2023
 
 
 
-Huque & Dukhovni        Expires 13 November 2023                [Page 4]
+Huque & Dukhovni        Expires 21 December 2023                [Page 4]
 
-Internet-Draft         TLSA client authentication               May 2023
+Internet-Draft         TLSA client authentication              June 2023
 
 
 6.  Example TLSA records for clients
@@ -277,9 +277,9 @@ Internet-Draft         TLSA client authentication               May 2023
 
 
 
-Huque & Dukhovni        Expires 13 November 2023                [Page 5]
+Huque & Dukhovni        Expires 21 December 2023                [Page 5]
 
-Internet-Draft         TLSA client authentication               May 2023
+Internet-Draft         TLSA client authentication              June 2023
 
 
    A TLS Server implementing this specification performs the following
@@ -333,9 +333,9 @@ Internet-Draft         TLSA client authentication               May 2023
 
 
 
-Huque & Dukhovni        Expires 13 November 2023                [Page 6]
+Huque & Dukhovni        Expires 21 December 2023                [Page 6]
 
-Internet-Draft         TLSA client authentication               May 2023
+Internet-Draft         TLSA client authentication              June 2023
 
 
    Specific applications may be designed to require additional
@@ -389,9 +389,9 @@ Internet-Draft         TLSA client authentication               May 2023
 
 
 
-Huque & Dukhovni        Expires 13 November 2023                [Page 7]
+Huque & Dukhovni        Expires 21 December 2023                [Page 7]
 
-Internet-Draft         TLSA client authentication               May 2023
+Internet-Draft         TLSA client authentication              June 2023
 
 
    [RFC5280]  Cooper, D., Santesson, S., Farrell, S., Boeyen, S.,
@@ -445,9 +445,9 @@ Authors' Addresses
 
 
 
-Huque & Dukhovni        Expires 13 November 2023                [Page 8]
+Huque & Dukhovni        Expires 21 December 2023                [Page 8]
 
-Internet-Draft         TLSA client authentication               May 2023
+Internet-Draft         TLSA client authentication              June 2023
 
 
    Shumon Huque
@@ -501,4 +501,4 @@ Internet-Draft         TLSA client authentication               May 2023
 
 
 
-Huque & Dukhovni        Expires 13 November 2023                [Page 9]
+Huque & Dukhovni        Expires 21 December 2023                [Page 9]
