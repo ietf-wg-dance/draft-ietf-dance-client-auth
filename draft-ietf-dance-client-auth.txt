@@ -426,8 +426,8 @@ Internet-Draft         TLSA client authentication              June 2023
 
    [TLSCLIENTID]
               Huque, S. and V. Dukhovni, "TLS Extension for DANE Client
-              Identity", <https://tools.ietf.org/html/draft-huque-tls-
-              dane-clientid>.
+              Identity", <https://datatracker.ietf.org/doc/html/draft-
+              ietf-dance-tls-clientid>.
 
 12.2.  Informative References
 
