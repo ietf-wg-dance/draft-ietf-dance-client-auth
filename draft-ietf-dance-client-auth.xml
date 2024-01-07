@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="19" month="06" year="2023"/>
+    <date day="8" month="1" year="2024"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
@@ -127,7 +127,7 @@
         </t>
         <artwork name="" type="" align="left" alt=""><![CDATA[
 
-_service.[client-domain-name]
+[_service].[client-domain-name]
   	]]></artwork>
         <t>
           The first label identifies the application service name. The
@@ -147,7 +147,8 @@ _service.[client-domain-name]
         </t>
         <t>
 	  The RDATA or data field portion of the TLSA record is formed
-	  exactly as specified in RFC 6698 and RFC 7671, and carries the
+	  exactly as specified in <xref target="RFC6698"/> and
+        <xref target="RFC7671" format="default"/>, and carries the
 	  same meaning.
         </t>
       </section>
@@ -190,9 +191,9 @@ _service.[client-domain-name]
 	not feasible or wise in the general case.
       </t>
       <t>
-	The client generates (or has generated for it) a private and
-	public key pair. Where client certificates are being used, the
-	client also has a certificate binding the name to its public key.
+	The client has a private and public key pair. Where client
+        certificates are being used, the client also has a certificate
+        binding the name to its public key.
 	The certificate or public key has a corresponding TLSA record
 	published in the DNS, which allows it to be authenticated
 	directly via the DNS (using the DANE-TA or DANE-EE certificate
@@ -286,6 +287,19 @@ sensor7._device.example.com. IN TLSA (
          d8adbc3f433c8e587a85a14e54667b25
          f4dcd8c4ae6162121ea9166984831b57
          b408534451fd1b9702f8de0532ecd03c )
+  	]]></artwork>
+        <t>
+	  The example below shows a wildcard TLSA record mapped to a
+          TLSA record with a DANE-TA usage mode. This allows all client
+          identifiers matching the wildcard to be authenticated by client
+          certificates issued by an organization managed Certification
+          Authority.
+        </t>
+        <artwork name="" type="" align="left" alt=""><![CDATA[
+
+*._device.example.com. IN TLSA (
+   2 0 1 20efa254ecd5b646e701211095bc3fe4
+         423e21941b0b29efb21da57ec944a9b5 )
   	]]></artwork>
       </section>
 
@@ -407,10 +421,14 @@ sensor7._device.example.com. IN TLSA (
       <name>Security Considerations</name>
       <t>
 	This document updates RFC 6698 by defining the use of the TLSA
-        record for client TLS certificates. There are no security
-        considerations for this document beyond those described
-	in RFC 6698 and RFC 7671 and in the specifications for TLS and
-        DTLS [RFC8446], [RFC5246], [RFC6347].
+        record for client TLS certificates. Placing client identities
+        in the DNS may pose privacy issues for certain applications,
+        depending on the nature of the clients, and the structure and
+        content of the client names. Applications employing this protocol
+        should carefully assess those potential issues.
+        There are no other security considerations for this document beyond
+        those described in RFC 6698 and RFC 7671 and in the specifications
+        for TLS and DTLS [RFC8446], [RFC5246], [RFC6347].
       </t>
     </section>
 
