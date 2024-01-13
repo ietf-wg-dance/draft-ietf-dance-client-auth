@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-ietf-dance-client-auth-04"
+        docName="draft-ietf-dance-client-auth-05"
         ipr="trust200902" updates="6698,7671" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -41,7 +41,7 @@
   <front>
 
     <title abbrev="TLSA client authentication">TLS Client Authentication via DANE TLSA records</title>
-    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-04"/>
+    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-05"/>
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Salesforce</organization>
       <address>
@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="10" month="1" year="2024"/>
+    <date day="13" month="1" year="2024"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
@@ -466,7 +466,7 @@ sensor7._device.example.com. IN TLSA (
       </references>
       <references>
         <name>Informative References</name>
-        <reference anchor="DANCEARCH" target="https://datatracker.ietf.org/doc/html/draft-ietf-dance-tls-clientid">
+        <reference anchor="DANCEARCH" target="https://datatracker.ietf.org/doc/draft-ietf-dance-architecture/">
           <front>
             <title>An Architecture for DNS-Bound Client and Sender Identities</title>
             <author fullname="Ash Wilson" initials="A" surname="Wilson"/>
