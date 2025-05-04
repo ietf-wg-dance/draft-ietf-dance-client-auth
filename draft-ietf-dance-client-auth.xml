@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-ietf-dance-client-auth-05"
+        docName="draft-ietf-dance-client-auth-07"
         ipr="trust200902" updates="6698,7671" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -41,7 +41,7 @@
   <front>
 
     <title abbrev="TLSA client authentication">TLS Client Authentication via DANE TLSA records</title>
-    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-05"/>
+    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-07"/>
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Salesforce</organization>
       <address>
@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="13" month="1" year="2024"/>
+    <date day="04" month="05" year="2025"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
