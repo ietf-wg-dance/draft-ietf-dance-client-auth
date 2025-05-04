@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-ietf-dance-client-auth-03"
+        docName="draft-ietf-dance-client-auth-07"
         ipr="trust200902" updates="6698,7671" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -41,7 +41,7 @@
   <front>
 
     <title abbrev="TLSA client authentication">TLS Client Authentication via DANE TLSA records</title>
-    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-03"/>
+    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-07"/>
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Salesforce</organization>
       <address>
@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="8" month="1" year="2024"/>
+    <date day="04" month="05" year="2025"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
@@ -99,7 +99,14 @@
 	Internet of Things (IoT) plan to make use of this form of
         authentication, where large networks of physical objects identified
         by DNS names may authenticate themselves using TLS to centralized
-        device management and control platforms.
+        device management and control platforms. Other potential applications
+        include authenticating the client side of SMTP transport security.
+      </t>
+      <t>
+        A more detailed treatment of application architectures for DANE
+        client authentication is provided in
+        <xref target="DANCEARCH" format="default">
+        "An Architecture for DNS-Bound Client and Sender Identities"</xref>.
       </t>
       <t>
 	In this document, the term TLS is used generically to describe
@@ -408,7 +415,8 @@ sensor7._device.example.com. IN TLSA (
     <section anchor="Acknowledgements" numbered="true" toc="default">
       <name>Acknowledgements</name>
       <t>
-        TBD.
+        The authors thank the many members of the IETF DANCE working
+        group for helpful comments and input.
       </t>
     </section>
 
@@ -458,6 +466,15 @@ sensor7._device.example.com. IN TLSA (
       </references>
       <references>
         <name>Informative References</name>
+        <reference anchor="DANCEARCH" target="https://datatracker.ietf.org/doc/draft-ietf-dance-architecture/">
+          <front>
+            <title>An Architecture for DNS-Bound Client and Sender Identities</title>
+            <author fullname="Ash Wilson" initials="A" surname="Wilson"/>
+            <author fullname="Shumon Huque" initials="S" surname="Huque"/>
+            <author fullname="Olle E. Johansson" initials="O" surname="Johansson"/>
+            <author fullname="Michael Richardson" initials="M" surname="Richardson"/>
+          </front>
+        </reference>
         <reference anchor="CERTDEVID" target="https://tools.ietf.org/id/draft-friel-pki-for-devices-00.html">
           <front>
             <title>PKI Certificate Identifier Format for Devices</title>
