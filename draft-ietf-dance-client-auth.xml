@@ -454,13 +454,18 @@ sensor7._device.example.com. IN TLSA (
         authentication chain to the TLS server in a new Certificate
         extension within the handshake. A specification to do this in
         the other direction (from the server to the client) already
-        exists: RFC 9102 (TLS DNSSEC Chain Extension). However, this is
-        quite a heavy weight operation that some constrained clients may
-        have challenges with. Furthermore, in order to construct the
-        DANE authentication chain, the client would still need to perform
-        DNS queries which would leak its identity to the local network
-        environment. Nevertheless, if appetite to implement this
-        mechanism exists, a future version of this specification could
+        exists: <xref target="RFC9102" format="default">"TLS DNSSEC Chain Extension"</xref>.
+        However, there are several challenges when considering such an
+        approach from the client end. It is quite a heavy
+        weight operation that some constrained clients may have challenges
+        with. In order to construct the DANE authentication chain, the
+        client would need to perform DNS queries which would still
+        leak its identity to the local network environment without
+        encrypted DNS. Lastly, there maybe client side network impediments to
+        making this work, e.g. middleboxes that prevent DNSSEC enabled
+        queries from succeeding - one of the original motivations for
+        RFC 9102 in the first place. Nevertheless, if appetite to implement
+        this mechanism exists, a future version of this specification could
         define the details.
       </t>
       <t>
@@ -503,6 +508,7 @@ sensor7._device.example.com. IN TLSA (
       </references>
       <references>
         <name>Informative References</name>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9102.xml"/>
         <reference anchor="DANCEARCH" target="https://datatracker.ietf.org/doc/draft-ietf-dance-architecture/">
           <front>
             <title>An Architecture for DNS-Bound Client and Sender Identities</title>
