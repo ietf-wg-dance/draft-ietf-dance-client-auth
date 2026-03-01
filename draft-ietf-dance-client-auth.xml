@@ -75,9 +75,11 @@
       describes how to publish Transport Layer Security (TLS) server
       certificates or public keys in the DNS. This document updates RFC
       6698 and RFC 7671.
-      It describes how to additionally use the TLSA record to publish
+      It describes how to use the TLSA record to publish
       client certificates or public keys, and also the rules and
-      considerations for using them with TLS.
+      considerations for using them with TLS. In addition, it defines
+      a new TLS extension, DANE CLient Identity, to convey the client's
+      domain name identity to the server.
       </t>
     </abstract>
 
@@ -88,8 +90,9 @@
     <section numbered="true" toc="default">
       <name>Introduction and Motivation</name>
       <t>
-	The Transport Layer Security (TLS) protocol
-        <xref target="RFC8446" format="default"/> optionally supports the authentication of
+	The Transport Layer Security (TLS)
+        <xref target="RFC8446" format="default"/> and DTLS
+        <xref target="RFC9147" format="default"/> protocols optionally support the authentication of
         clients using <xref target="RFC5280" format="default">X.509 certificates</xref> or
 	<xref target="RFC7250" format="default">raw public keys</xref>. TLS applications
 	that perform DANE authentication of servers using TLSA records
@@ -248,8 +251,66 @@
         that the TLS server should attempt to authenticate. This is required
         when using TLS raw public key authentication, since there is no
         client certificate from which to extract the client's DNS identity.
-        It is also helpful when the client certificate contains multiple
+        It is also required when the client certificate contains multiple
         identities, and only a specific one has a DANE record.
+      </t>
+    </section>
+
+    <section numbered="true" toc="default">
+      <name>DANE Client Identity Extension</name>
+      <t>
+        The DANE Client Identity Extension type, "dane_clientid",
+        will have a value assigned and registered in the IANA
+        TLS Extensions registry. Its extension data (if not has the
+        following format:
+      </t>
+      <artwork name="" type="" align="left" alt=""><![CDATA[
+
+opaque ClientName<0..2^8-1>;
+        ]]></artwork>
+      <t>
+        The ClientName field contains the single domain name of
+        the client in textual presentation format, as described in
+        <xref target="RFC1035" format="default">RFC 1035</xref>,
+        omitting the trailing dot. The lower bound value of 0
+        indicates that no client name is present.
+      </t>
+      <t>
+        The wire format of a domain name is limited to 255 octets.
+        In keeping with the practice of most TLS extensions, this
+        extension specifies the use of the textual presentation
+        format of domain names instead. In theory, the presentation
+        format can exceed 255 characters because it allows the
+        expression of any arbitrary octet with the "\DDD" sequence
+        of characters (where DDD is the decimal value). Applications
+        using this extension (and the DANE TLSA Client Authentication
+        protocol more generally) should ensure that client domain names
+        being used do not need to resort to the \DDD syntax by limiting
+        the alphabet suitably, such as only allowing letters, digits,
+        hyphens, and underscores. This ensures that the presentation
+        format client domain name will comfortably fit within the 255
+        octet limit.
+      </t>
+      <t>
+        A TLS server implementing this specification MUST send
+        an empty extension of type "dane_clientid" in its
+        CertificateRequest message, to indicate that
+        it understands the extension and is capable of performing
+        DANE client authentication.
+      </t>
+      <t>
+        A TLS client implementing this specification and intending to
+        use DANE client authentication the TLS server, MUST send
+        an extension of type "dane_clientid" in its Certificate message.
+        Per the TLS protocol, the client is only permitted to send the
+        extension if it sees the corresponding empty extension in the
+        server's CertificateRequest message. If the client only needs
+        to indicate that it has a DANE record and that the client's
+        domain name identity can be obtained from its certificate, then
+        the extension sent can be empty. If the client needs to send
+        its domain name identity, then the "extension_data" field
+        of the extension MUST contain a "ClientName" data structure
+        populated with the domain name.
       </t>
     </section>
 
@@ -257,7 +318,7 @@
       <name>Example TLSA records for clients</name>
       <t>
 	The following examples are provided in the textual presentation
-	format of the TLSA record.
+	format of the DNS TLSA record.
       </t>
 
       <section numbered="true" toc="default">
@@ -422,11 +483,6 @@ sensor7._device.example.com. IN TLSA (
       </t>
     </section>
 
-    <section anchor="IANA" numbered="true" toc="default">
-      <name>IANA Considerations</name>
-      <t>This document includes no request to IANA.</t>
-    </section>
-
     <section anchor="Security" numbered="true" toc="default">
       <name>Security Considerations</name>
       <t>
@@ -480,6 +536,20 @@ sensor7._device.example.com. IN TLSA (
       </t>
     </section>
 
+    <section anchor="IANA" numbered="true" toc="default">
+      <name>IANA Considerations</name>
+      <t>
+        IANA is requested to create the following entry in the "TLS ExtensionTypes Values" registry:
+      </t>
+      <t>
+        Extension Name "dane_clientid" with value TBD, "TLS 1.3" column values set to "CR, CT", "DTLS-Only" column set to "N", and "Recommended" column set to "N".
+      </t>
+      <t>
+        The 'N' designation in the "Recommended" column is because this
+        extension has very specific use cases.
+      </t>
+    </section>
+
   </middle>
 
   <!--  *****BACK MATTER ***** -->
@@ -489,6 +559,7 @@ sensor7._device.example.com. IN TLSA (
       <name>References</name>
       <references>
         <name>Normative References</name>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.1035.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5280.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6347.xml"/>
@@ -497,6 +568,7 @@ sensor7._device.example.com. IN TLSA (
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7671.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8446.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9147.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9364.xml"/>
         <reference anchor="TLSCLIENTID" target="https://datatracker.ietf.org/doc/html/draft-ietf-dance-tls-clientid">
           <front>
