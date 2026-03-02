@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-ietf-dance-client-auth-10"
+        docName="draft-ietf-dance-client-auth"
         ipr="trust200902" updates="6698,7671" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -105,12 +105,6 @@
         by DNS names may authenticate themselves using TLS to centralized
         device management and control platforms. Other potential applications
         include authenticating the client side of SMTP transport security.
-      </t>
-      <t>
-        A more detailed treatment of application architectures for DANE
-        client authentication is provided in
-        <xref target="DANCEARCH" format="default">
-        "An Architecture for DNS-Bound Client and Sender Identities"</xref>.
       </t>
       <t>
 	In this document, the term TLS is used generically to describe
@@ -279,8 +273,9 @@ sensor7._device.example.com. IN TLSA (
 	type, and only one instance of the dNSName type is permitted.
       </t>
       <t>
-	If the TLS DANE Client Identity extension is in use, then with
-	DANE-EE(3), the subject name need not be present in the certificate.
+	If the client uses a non-empty TLS DANE Client Identity extension,
+        then with DANE-EE(3), the subject name need not be present in the
+        certificate.
       </t>
     </section>
 
@@ -354,10 +349,10 @@ opaque ClientName<0..2^8-1>;
         extension if it sees the corresponding empty extension in the
         server's CertificateRequest message. If the client only needs
         to indicate that it has a DANE record and that the client's
-        domain name identity can be obtained from its certificate, then
-        the extension sent can be empty. If the client needs to send
-        its domain name identity, then the "extension_data" field
-        of the extension MUST contain a "ClientName" data structure
+        domain name identity can be obtained unambiguously from its
+        certificate, then the extension sent can be empty. If the client
+        needs to send its domain name identity, then the "extension_data"
+        field of the extension MUST contain a "ClientName" data structure
         populated with the domain name.
       </t>
     </section>
@@ -429,20 +424,25 @@ opaque ClientName<0..2^8-1>;
 	TLS servers configured to perform DANE authentication according
 	to this specification should only examine and authenticate the
 	dNSName, and only one such dNSName identity should be present
-        in the certificate, otherwise the server should abort the
+        in the certificate, otherwise the server MUST abort the
         connection with a bad_certificate TLS alert.
       </t>
       <t>
 	If the presented client certificate has multiple dNSName
 	identities, then the client MUST use a non-empty TLS DANE client
-        identity extension to unambiguously indicate its intended name
-        to the server.
+        identity extension to unambiguously indicate one of these
+        identities as its client name to the server. If the name in
+        the TLS DANE client identity extension does not match one of
+        the dNSNames in the certificate, then the server MUST
+        abort the connection with a bad_certificate TLS alert.
       </t>
       <t>
 	Servers may have their own whitelisting and authorization rules
 	for which certificates they accept. For example a TLS server may
 	be configured to only allow TLS sessions from clients with
 	certificate identities within a specific domain or set of domains.
+        If such rules are not met, the TLS server again could terminate
+        the connection with a handshake_failure TLS alert.
       </t>
     </section>
 
@@ -555,15 +555,6 @@ opaque ClientName<0..2^8-1>;
       <references>
         <name>Informative References</name>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9102.xml"/>
-        <reference anchor="DANCEARCH" target="https://datatracker.ietf.org/doc/draft-ietf-dance-architecture/">
-          <front>
-            <title>An Architecture for DNS-Bound Client and Sender Identities</title>
-            <author fullname="Ash Wilson" initials="A" surname="Wilson"/>
-            <author fullname="Shumon Huque" initials="S" surname="Huque"/>
-            <author fullname="Olle E. Johansson" initials="O" surname="Johansson"/>
-            <author fullname="Michael Richardson" initials="M" surname="Richardson"/>
-          </front>
-        </reference>
         <reference anchor="SRVREG" target="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.txt">
           <front>
             <title>Service Name and Transport Protocol Port Number Registry</title>
