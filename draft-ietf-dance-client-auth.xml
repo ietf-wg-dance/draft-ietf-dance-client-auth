@@ -287,13 +287,14 @@ sensor7._device.example.com. IN TLSA (
       </t>
       <t>
         The DANE Client Identity TLS
-        extension is used for this purpose. This extension can also
-        be used to convey the actual DANE client identity (i.e., domain name)
-        that the TLS server should attempt to authenticate. This is required
-        when using TLS raw public key authentication, since there is no
-        client certificate from which to extract the client's DNS identity.
-        It is also required when the client certificate contains multiple
-        identities, and only a specific one has a DANE record.
+        extension is used for this purpose. The client uses this extension
+        to convey the actual DANE client identity (i.e., domain name)
+        that the TLS server should attempt to authenticate. Conveying the
+        identity explicitly is essential when using TLS raw public key
+        authentication, since there is no client certificate from which to
+        extract the client's DNS identity, and when the client certificate
+        contains multiple identities, only a specific one of which has a
+        DANE record.
       </t>
       <t>
         The format of this extension and the detailed client and server
@@ -346,17 +347,12 @@ opaque ClientName<0..2^8-1>;
       </t>
       <t>
         A TLS client implementing this specification and intending to
-        use DANE client authentication with the TLS server, MUST send
-        an extension of type "dane_clientid" in its Certificate message.
-        Per the TLS protocol, the client is only permitted to send the
-        extension if it sees the corresponding extension in the
-        server's CertificateRequest message. If the client only needs
-        to indicate that it has a DANE record and that the client's
-        domain name identity can be obtained unambiguously from its
-        certificate, then the extension sent can contain a zero-length
-        ClientName. If the client needs to send its domain name identity,
-        then the ClientName field of the extension MUST be populated with
-        the domain name.
+        use DANE client authentication with the TLS server MUST send
+        an extension of type "dane_clientid", with a nonzero-length
+        ClientName populated with its domain name identity, in its
+        Certificate message. Per the TLS protocol, the client is only
+        permitted to send the extension if it sees the corresponding
+        extension in the server's CertificateRequest message.
       </t>
     </section>
 
