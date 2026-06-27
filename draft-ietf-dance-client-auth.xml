@@ -305,16 +305,15 @@ device73.example.com. IN TLSA (
     <section anchor="cert_id" numbered="true" toc="default">
       <name>Client Identifiers in X.509 Certificates</name>
       <t>
-	If the TLS DANE Client Identity extension
-	(see <xref target="clientid_extension" format="default"/>) is not being used, the
-	client certificate MUST have the client's DNS name
-	specified in the Subject Alternative Name extension's dNSName
-	type, and only one instance of the dNSName type is permitted.
+	The client conveys its DNS name to the server using the TLS DANE
+	Client Identity extension
+	(see <xref target="clientid_extension" format="default"/>). When the
+	client's DNS name is also present in the certificate, it MUST be
+	specified in the Subject Alternative Name extension's dNSName type.
       </t>
       <t>
-	If the client sends a nonzero-length ClientName in the TLS DANE
-        Client Identity extension, then with DANE-EE(3), the subject name
-        need not be present in the certificate.
+	With the DANE-EE(3) certificate usage, the client's name need not
+	be present in the certificate.
       </t>
     </section>
 
@@ -417,18 +416,18 @@ opaque ClientName<0..2^8-1>;
 	  "Certificate Request" message, that includes a DANE
           Client Identity extension with a zero-length ClientName.</li>
         <li>The TLS client supplies its certificate in its Certificate
-          message, and if implementing this protocol, also
-          includes the DANE Client Identity extension in the Certificate
+          message, and includes the DANE Client Identity extension,
+          carrying a nonzero-length ClientName, in the Certificate
           message.</li>
-        <li>If the client has sent a nonzero-length ClientName in the DANE
-          Client Identity extension in its Certificate message, then extract
-          the client's domain name from the ClientName. Otherwise, extract the
-          client identity from the Subject Alternative Name extension's dNSName
-          type.</li>
+        <li>Extract the client's domain name from the nonzero-length
+          ClientName in the DANE Client Identity extension in the client's
+          Certificate message. If the client did not send the extension, or
+          sent a zero-length ClientName, then it has not supplied a DANE
+          identity; the server treats the client as unauthenticated and
+          proceeds as described in step 5.</li>
         <li>Construct the DNS query name for the corresponding TLSA
-	  record. If a nonzero-length ClientName was sent in the TLS DANE
-	  Client Identity extension, then this name should be used. Otherwise,
-	  the single identity from the client certificate is used.</li>
+	  record from the client's domain name obtained in the previous
+	  step.</li>
         <li>Look up the TLSA record set in the DNS. The response MUST be
 	  cryptographically validated using DNSSEC. The server could
 	  perform DNSSEC validation itself, authenticating the full
@@ -458,24 +457,13 @@ opaque ClientName<0..2^8-1>;
 	  which SHOULD be implemented.</li>
       </ol>
       <t>
-	If the DANE Client Identity extension carries a zero-length
-	ClientName, and the
-	presented client certificate has multiple distinct reference
-	identifier types (e.g., a dNSName and an rfc822Name) then
-	TLS servers configured to perform DANE authentication according
-	to this specification should only examine and authenticate the
-	dNSName, and only one such dNSName identity should be present
-        in the certificate, otherwise the server MUST abort the
-        connection with a bad_certificate TLS alert.
-      </t>
-      <t>
-	If the presented client certificate has multiple dNSName
-	identities, then the client MUST send a nonzero-length ClientName
-        in the TLS DANE Client Identity extension to unambiguously indicate
-        one of these identities as its client name to the server. If the name in
-        the TLS DANE Client Identity extension does not match one of
-        the dNSNames in the certificate, then the server MUST
-        abort the connection with a bad_certificate TLS alert.
+	When the client's name is expected to appear in the certificate,
+	and the certificate contains multiple dNSName identities, the
+	ClientName sent in the TLS DANE Client Identity extension
+	unambiguously indicates which one is the client's name. If the
+	name in the TLS DANE Client Identity extension does not match one
+	of the dNSNames in the certificate, then the server MUST abort the
+	connection with a bad_certificate TLS alert.
       </t>
       <t>
 	Servers may have their own allowlisting and authorization rules
