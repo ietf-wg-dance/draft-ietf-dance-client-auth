@@ -271,9 +271,9 @@ sensor7._device.example.com. IN TLSA (
 	type, and only one instance of the dNSName type is permitted.
       </t>
       <t>
-	If the client uses a non-empty TLS DANE Client Identity extension,
-        then with DANE-EE(3), the subject name need not be present in the
-        certificate.
+	If the client sends a nonzero-length ClientName in the TLS DANE
+        Client Identity extension, then with DANE-EE(3), the subject name
+        need not be present in the certificate.
       </t>
     </section>
 
@@ -306,7 +306,7 @@ sensor7._device.example.com. IN TLSA (
       <t>
         The DANE Client Identity extension type, "dane_clientid",
         will have a value assigned and registered in the IANA
-        TLS Extensions registry. Its extension data, if not empty, has
+        TLS Extensions registry. Its extension_data field always has
         the following format:
       </t>
       <artwork name="" type="" align="left" alt=""><![CDATA[
@@ -338,24 +338,25 @@ opaque ClientName<0..2^8-1>;
       </t>
       <t>
         A TLS server implementing this specification MUST send
-        an empty extension of type "dane_clientid" in its
-        CertificateRequest message, to indicate that
+        the "dane_clientid" extension, with a zero-length ClientName,
+        in its CertificateRequest message, to indicate that
         it understands the extension and is capable of performing
-        DANE client authentication.
+        DANE client authentication. The server supplies no name of
+        its own.
       </t>
       <t>
         A TLS client implementing this specification and intending to
         use DANE client authentication with the TLS server, MUST send
         an extension of type "dane_clientid" in its Certificate message.
         Per the TLS protocol, the client is only permitted to send the
-        extension if it sees the corresponding empty extension in the
+        extension if it sees the corresponding extension in the
         server's CertificateRequest message. If the client only needs
         to indicate that it has a DANE record and that the client's
         domain name identity can be obtained unambiguously from its
-        certificate, then the extension sent can be empty. If the client
-        needs to send its domain name identity, then the "extension_data"
-        field of the extension MUST contain a "ClientName" data structure
-        populated with the domain name.
+        certificate, then the extension sent can contain a zero-length
+        ClientName. If the client needs to send its domain name identity,
+        then the ClientName field of the extension MUST be populated with
+        the domain name.
       </t>
     </section>
 
@@ -376,21 +377,21 @@ opaque ClientName<0..2^8-1>;
       </t>
       <ol spacing="normal">
         <li>Request a client certificate in the TLS handshake's
-	  "Certificate Request" message, that includes an empty DANE
-          Client Identity extension.</li>
+	  "Certificate Request" message, that includes a DANE
+          Client Identity extension with a zero-length ClientName.</li>
         <li>The TLS client supplies its certificate in its Certificate
           message, and if implementing this protocol, also
           includes the DANE Client Identity extension in the Certificate
           message.</li>
-        <li>If the client has sent a non-empty DANE Client Identity
-          extension in its Certificate message, then extract the client's
-          domain name from the extension. Otherwise, extract the client
-          identity from the Subject Alternative Name extension's dNSName
+        <li>If the client has sent a nonzero-length ClientName in the DANE
+          Client Identity extension in its Certificate message, then extract
+          the client's domain name from the ClientName. Otherwise, extract the
+          client identity from the Subject Alternative Name extension's dNSName
           type.</li>
         <li>Construct the DNS query name for the corresponding TLSA
-	  record. If the TLS DANE Client Identity extension was present,
-	  then this name should be used. Otherwise, the single identity
-          from the client certificate is used.</li>
+	  record. If a nonzero-length ClientName was sent in the TLS DANE
+	  Client Identity extension, then this name should be used. Otherwise,
+	  the single identity from the client certificate is used.</li>
         <li>Look up the TLSA record set in the DNS. The response MUST be
 	  cryptographically validated using DNSSEC. The server could
 	  perform DNSSEC validation itself, authenticating the full
@@ -420,7 +421,8 @@ opaque ClientName<0..2^8-1>;
 	  which SHOULD be implemented.</li>
       </ol>
       <t>
-	If the DANE Client Identity extension is empty, and the
+	If the DANE Client Identity extension carries a zero-length
+	ClientName, and the
 	presented client certificate has multiple distinct reference
 	identifier types (e.g., a dNSName and an rfc822Name) then
 	TLS servers configured to perform DANE authentication according
@@ -431,9 +433,9 @@ opaque ClientName<0..2^8-1>;
       </t>
       <t>
 	If the presented client certificate has multiple dNSName
-	identities, then the client MUST use a non-empty TLS DANE Client
-        Identity extension to unambiguously indicate one of these
-        identities as its client name to the server. If the name in
+	identities, then the client MUST send a nonzero-length ClientName
+        in the TLS DANE Client Identity extension to unambiguously indicate
+        one of these identities as its client name to the server. If the name in
         the TLS DANE Client Identity extension does not match one of
         the dNSNames in the certificate, then the server MUST
         abort the connection with a bad_certificate TLS alert.
@@ -452,8 +454,8 @@ opaque ClientName<0..2^8-1>;
       <name>Raw Public Keys</name>
       <t>
 	When using <xref target="RFC7250" format="default">raw public keys in TLS</xref>,
-	this specification requires the use of a non-empty TLS DANE Client
-	Identity extension. The associated DANE TLSA records employ only
+	this specification requires the use of a nonzero-length ClientName
+	in the TLS DANE Client Identity extension. The associated DANE TLSA records employ only
 	certificate usage 3 (DANE-EE) and a selector value of 1 (SPKI),
 	as described in <xref target="RFC7671" format="default"/>.
       </t>
