@@ -180,6 +180,30 @@
           party.
         </t>
       </section>
+
+      <section anchor="owner_format3" numbered="true" toc="default">
+        <name>Format 3: Freeform Client Identity</name>
+        <t>
+          In this format, the owner name of the client TLSA record is an
+          ordinary DNS domain name, with no service label or other
+          structural label interposed:
+        </t>
+        <artwork name="" type="" align="left" alt=""><![CDATA[
+
+[client-domain-name]
+        ]]></artwork>
+        <t>
+          This form imposes no structure beyond a domain name that
+          identifies the client. Because it need not contain any
+          underscore-prefixed labels, it can be represented directly in
+          the dNSName component of the Subject Alternative Name extension
+          of an X.509 certificate. It is therefore the most suitable form
+          for deployments whose client certificates are issued by a public
+          Certification Authority, or that otherwise rely on the
+          certificate to carry the client's name, since public CAs and the
+          dNSName type do not generally permit underscore-prefixed labels.
+        </t>
+      </section>
     </section>
 
     <section numbered="true" toc="default">
@@ -235,6 +259,23 @@ sensor7._device.example.com. IN TLSA (
 *._device.example.com. IN TLSA (
    2 0 1 20efa254ecd5b646e701211095bc3fe4
          423e21941b0b29efb21da57ec944a9b5 )
+  	]]></artwork>
+      </section>
+
+      <section numbered="true" toc="default">
+        <name>Format 3: Freeform Client Identity</name>
+        <t>
+	  An example TLSA record for the client "device73.example.com",
+	  whose certificate is issued by a public Certification Authority.
+	  This record specifies certificate usage 1 (PKIX-EE) and the
+	  SHA-256 hash of the subject public key component of the
+	  end-entity certificate corresponding to the client.
+        </t>
+        <artwork name="" type="" align="left" alt=""><![CDATA[
+
+device73.example.com. IN TLSA (
+   1 1 1 d2abde240d7cd3ee6b4b28c54df034b9
+         7983a1d16e8a410e4561cb106618e971 )
   	]]></artwork>
       </section>
     </section>
