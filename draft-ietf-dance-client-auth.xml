@@ -471,7 +471,7 @@ opaque ClientName<0..2^8-1>;
 	unambiguously indicates which one is the client's name. If the
 	name in the TLS DANE Client Identity extension does not match one
 	of the dNSNames in the certificate, then the server MUST abort the
-	connection with a bad_certificate TLS alert.
+	connection with a handshake_failure TLS alert.
       </t>
       <t>
 	Servers may have their own allowlisting and authorization rules
@@ -545,6 +545,25 @@ opaque ClientName<0..2^8-1>;
         where such authentication is mandatory; otherwise the client would
         be unable to convey its DANE identity and authentication could be
         silently bypassed.
+      </t>
+      <t>
+        This specification uses a single, generic TLS alert
+        (handshake_failure) for the various client authentication failure
+        conditions it describes, such as the absence of a usable DANE
+        identity, DNSSEC validation failure, failure to match the
+        certificate or public key against the TLSA records, a name mismatch
+        between the conveyed identity and the certificate, or failure of a
+        local authorization policy. Using distinct alerts for distinct
+        causes could allow a client or on-path adversary to probe the
+        server and infer information it would not otherwise have, such as
+        whether a particular client identity has a published DANE record,
+        or whether DNSSEC validation rather than authorization was the
+        point of failure. Implementations SHOULD therefore avoid revealing
+        the specific cause of an authentication failure through the choice
+        of alert. As described in <xref target="changes" format="default"/>,
+        where client authentication is optional a server MAY instead
+        proceed with the client treated as unauthenticated, which reveals
+        nothing at the TLS layer.
       </t>
     </section>
 
