@@ -87,7 +87,7 @@
 
   <middle>
 
-    <section numbered="true" toc="default">
+    <section anchor="intro" numbered="true" toc="default">
       <name>Introduction and Motivation</name>
       <t>
 	The TLS <xref target="RFC8446" format="default"/> and DTLS
@@ -108,8 +108,16 @@
       <t>
 	In this document, the term TLS is used generically to describe
 	both the TLS and DTLS (Datagram Transport Layer Security) protocols.
-        The protocol changes described can also be used with QUIC since QUIC
+        The protocol changes described can also be used with QUIC, since QUIC
         re-uses the TLS handshake.
+      </t>
+      <t>
+        This specification requires TLS 1.3 <xref target="RFC8446"/> or
+        DTLS 1.3 <xref target="RFC9147"/> (or later versions). It relies on
+        extensions carried within the CertificateRequest and Certificate
+        handshake messages, and such per-certificate extensions are not
+        available in earlier versions of the protocols, whose Certificate
+        message carries no extension fields.
       </t>
       <section anchor="reserved-words"><name>Requirements Language</name>
       <t>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,
@@ -528,6 +536,15 @@ opaque ClientName<0..2^8-1>;
         attacks where traffic is redirected from one service to another.
         Deployers of this protocol should avoid this by not sharing per
         client credentials across distinct applications.
+      </t>
+      <t>
+        Because this mechanism cannot operate over TLS 1.2 or earlier
+        (see <xref target="intro" format="default"/>), a
+        server that requires DANE client authentication MUST NOT negotiate
+        a protocol version below TLS 1.3 (or DTLS 1.3) for connections
+        where such authentication is mandatory; otherwise the client would
+        be unable to convey its DANE identity and authentication could be
+        silently bypassed.
       </t>
     </section>
 
