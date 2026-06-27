@@ -478,8 +478,10 @@ opaque ClientName<0..2^8-1>;
 	for which certificates they accept. For example a TLS server may
 	be configured to only allow TLS sessions from clients with
 	certificate identities within a specific domain or set of domains.
-        If such rules are not met, the TLS server again could terminate
-        the connection with a handshake_failure TLS alert.
+        If such rules are not met, the TLS server MUST either terminate
+        the connection with a handshake_failure TLS alert, or, if
+        configured to do so, treat the client as unauthenticated and
+        proceed with the session.
       </t>
     </section>
 
