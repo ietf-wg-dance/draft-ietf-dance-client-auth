@@ -355,8 +355,8 @@ device73.example.com. IN TLSA (
       <t>
         The DANE Client Identity extension type, "dane_clientid",
         will have a value assigned and registered in the IANA
-        TLS Extensions registry. Its extension_data field always has
-        the following format:
+        "TLS ExtensionType Values" registry. Its extension_data field
+        always has the following format:
       </t>
       <artwork name="" type="" align="left" alt=""><![CDATA[
 
@@ -570,7 +570,7 @@ opaque ClientName<0..2^8-1>;
     <section anchor="IANA" numbered="true" toc="default">
       <name>IANA Considerations</name>
       <t>
-        IANA is requested to create the following entry in the "TLS ExtensionTypes Values" registry:
+        IANA is requested to create the following entry in the "TLS ExtensionType Values" registry:
       </t>
       <t>
         Extension Name "dane_clientid" with value TBD, "TLS 1.3" column values set to "CR, CT", "DTLS-Only" column set to "N", and "Recommended" column set to "N".
