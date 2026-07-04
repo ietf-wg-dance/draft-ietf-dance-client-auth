@@ -136,6 +136,20 @@
         prescribe a single format, but mentions a few that may have
         wide applicability.
       </t>
+      <t>
+        The name that the client conveys to the server (in the TLS DANE
+        Client Identity extension, see
+        <xref target="clientid_extension" format="default"/>) is the
+        complete owner name of the client's TLSA record, that is, the exact
+        DNS name the server queries. Unlike server-side DANE
+        <xref target="RFC6698"/>, where the verifier derives the TLSA owner
+        name from transport coordinates (the _port._proto prefix), client
+        naming conventions are application-specific; this document describes
+        several below and does not prescribe one. Because the TLS layer is
+        general-purpose and has no knowledge of these conventions, the
+        client conveys the full owner name and the server performs no
+        construction of its own.
+      </t>
 
       <section anchor="owner_format1" numbered="true" toc="default">
         <name>Format 1: Service Specific Client Identity</name>
@@ -363,11 +377,13 @@ device73.example.com. IN TLSA (
 opaque ClientName<0..2^8-1>;
         ]]></artwork>
       <t>
-        The ClientName field contains the single domain name of
-        the client in textual presentation format, as described in
-        <xref target="RFC1035" format="default">RFC 1035</xref>,
-        omitting the trailing dot. The lower bound length value of 0
-        octets indicates that no client name is present.
+        The ClientName field contains the full owner name of the
+        client's TLSA record in textual presentation format, as described
+        in <xref target="RFC1035" format="default">RFC 1035</xref>,
+        omitting the trailing dot. This is the exact DNS name the server
+        queries; the server performs no further construction of it (see
+        <xref target="owner_format" format="default"/>). The lower bound
+        length value of 0 octets indicates that no client name is present.
       </t>
       <t>
         A DNS name is a sequence of octets rather than a Unicode string.
@@ -442,11 +458,10 @@ opaque ClientName<0..2^8-1>;
           Certificate message. If the client did not send the extension, or
           sent a zero-length ClientName, then it has not supplied a DANE
           identity; the server treats the client as unauthenticated and
-          proceeds as described in step 5.</li>
-        <li>Construct the DNS query name for the corresponding TLSA
-	  record from the client's domain name obtained in the previous
-	  step.</li>
-        <li>Look up the TLSA record set in the DNS. The response MUST be
+          proceeds as described in step 4.</li>
+        <li>Look up the TLSA record set in the DNS, using the client's
+	  domain name obtained in the previous step directly as the DNS
+	  query name. The response MUST be
 	  cryptographically validated using DNSSEC. The server could
 	  perform DNSSEC validation itself, authenticating the full
           chain back to a configured trust anchor (normally the DNS root).
