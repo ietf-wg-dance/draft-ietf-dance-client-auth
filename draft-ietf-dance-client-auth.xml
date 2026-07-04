@@ -349,14 +349,14 @@ device73.example.com. IN TLSA (
       </t>
       <t>
         The DANE Client Identity TLS
-        extension is used for this purpose. The client uses this extension
-        to convey the actual DANE client identity (i.e., domain name)
-        that the TLS server should attempt to authenticate. Conveying the
-        identity explicitly is essential when using TLS raw public key
-        authentication, since there is no client certificate from which to
-        extract the client's DNS identity, and when the client certificate
-        contains multiple identities, only a specific one of which has a
-        DANE record.
+        extension is used for this purpose. A conforming client always
+        conveys its DANE client identity (i.e., domain name) in this
+        extension (see <xref target="clientid_extension" format="default"/>),
+        so the server never needs to derive it from the certificate. This is
+        particularly important when using TLS raw public key authentication,
+        where there is no certificate from which an identity could be
+        extracted, and when a client certificate contains multiple
+        identities, only a specific one of which has a DANE record.
       </t>
       <t>
         The format of this extension and the detailed client and server
