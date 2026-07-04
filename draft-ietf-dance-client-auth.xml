@@ -370,6 +370,16 @@ opaque ClientName<0..2^8-1>;
         octets indicates that no client name is present.
       </t>
       <t>
+        A DNS name is a sequence of octets rather than a Unicode string.
+        Where the client's identity includes internationalized labels,
+        those labels MUST be expressed in their A-label (ASCII-Compatible
+        Encoding) form <xref target="RFC5890" format="default"/>, which is
+        the form present in the DNS and, per
+        <xref target="RFC5280" section="7.2" sectionFormat="of"/>, the form
+        required in a certificate's dNSName. U-labels (native Unicode) MUST
+        NOT be used.
+      </t>
+      <t>
         The wire format of a domain name is limited to 255 octets.
         In keeping with the practice of most TLS extensions, this
         extension specifies the use of the textual presentation
@@ -595,6 +605,7 @@ opaque ClientName<0..2^8-1>;
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.1035.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5280.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5890.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6698.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7250.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7671.xml"/>
