@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-ietf-dance-client-auth-10"
+        docName="draft-ietf-dance-client-auth-12"
         ipr="trust200902" updates="6698,7671" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -41,7 +41,7 @@
   <front>
 
     <title abbrev="TLSA client authentication">TLS Client Authentication via DANE TLSA records</title>
-    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-10"/>
+    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-12"/>
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Salesforce</organization>
       <address>
@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="2" month="3" year="2026"/>
+    <date day="6" month="7" year="2026"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
@@ -78,7 +78,7 @@
       It describes how to use the TLSA record to publish
       client certificates or public keys, and also the rules and
       considerations for using them with TLS. In addition, it defines
-      a new TLS extension, DANE CLient Identity, to convey the client's
+      a new TLS extension, DANE Client Identity, to convey the client's
       domain name identity to the server.
       </t>
     </abstract>
@@ -87,13 +87,12 @@
 
   <middle>
 
-    <section numbered="true" toc="default">
+    <section anchor="intro" numbered="true" toc="default">
       <name>Introduction and Motivation</name>
       <t>
-	The Transport Layer Security (TLS)
-        <xref target="RFC8446" format="default"/> and DTLS
-        <xref target="RFC9147" format="default"/> protocols optionally support the authentication of
-        clients using <xref target="RFC5280" format="default">X.509 certificates</xref> or
+	The TLS <xref target="RFC8446" format="default"/> and DTLS
+        <xref target="RFC9147" format="default"/> protocols optionally support the authentication
+        of clients using <xref target="RFC5280" format="default">X.509 certificates</xref> or
 	<xref target="RFC7250" format="default">raw public keys</xref>. TLS applications
 	that perform DANE <xref target="RFC6698"/> <xref target="RFC7671"/>
         authentication of servers using TLSA records
@@ -108,10 +107,17 @@
       </t>
       <t>
 	In this document, the term TLS is used generically to describe
-	both the TLS and
-	<xref target="RFC6347" format="default">DTLS (Datagram Transport Layer Security)
-        </xref> protocols. The protocol changes described can also be used
-        with QUIC since QUIC re-uses the TLS handshake.
+	both the TLS and DTLS (Datagram Transport Layer Security) protocols.
+        The protocol changes described can also be used with QUIC, since QUIC
+        re-uses the TLS handshake.
+      </t>
+      <t>
+        This specification requires TLS 1.3 <xref target="RFC8446"/> or
+        DTLS 1.3 <xref target="RFC9147"/> (or later versions). It relies on
+        extensions carried within the CertificateRequest and Certificate
+        handshake messages, and such per-certificate extensions are not
+        available in earlier versions of the protocols, whose Certificate
+        message carries no extension fields.
       </t>
       <section anchor="reserved-words"><name>Requirements Language</name>
       <t>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,
@@ -127,12 +133,26 @@
       <t>
         Different applications may have quite different conventions
         for naming clients via domain names. This document thus does not
-        proscribe a single format, but mentions a few that may have
+        prescribe a single format, but mentions a few that may have
         wide applicability.
+      </t>
+      <t>
+        The name that the client conveys to the server (in the TLS DANE
+        Client Identity extension, see
+        <xref target="clientid_extension" format="default"/>) is the
+        complete owner name of the client's TLSA record, that is, the exact
+        DNS name the server queries. Unlike server-side DANE
+        <xref target="RFC6698"/>, where the verifier derives the TLSA owner
+        name from transport coordinates (the _port._proto prefix), client
+        naming conventions are application-specific; this document describes
+        several below and does not prescribe one. Because the TLS layer is
+        general-purpose and has no knowledge of these conventions, the
+        client conveys the full owner name and the server performs no
+        construction of its own.
       </t>
 
       <section anchor="owner_format1" numbered="true" toc="default">
-        <name>Format 1: Service specific client identity</name>
+        <name>Format 1: Service Specific Client Identity</name>
 
         <t>
           In this format, the owner name of the client TLSA record
@@ -144,7 +164,7 @@
         ]]></artwork>
         <t>
           The first label identifies the application service name. The
-	  remaining labels are composed of the client domain name.
+	  remaining labels form the client domain name.
         </t>
         <t>
 	  Encoding the application service name into the owner name allows
@@ -167,7 +187,7 @@
       </section>
 
       <section anchor="owner_format2" numbered="true" toc="default">
-        <name>Format 2: IOT Device Identity</name>
+        <name>Format 2: IoT Device Identity</name>
         <t>
           The Device Identity form of the TLSA record has the following structure:
         </t>
@@ -182,10 +202,34 @@
           party.
         </t>
       </section>
+
+      <section anchor="owner_format3" numbered="true" toc="default">
+        <name>Format 3: Freeform Client Identity</name>
+        <t>
+          In this format, the owner name of the client TLSA record is an
+          ordinary DNS domain name, with no service label or other
+          structural label interposed:
+        </t>
+        <artwork name="" type="" align="left" alt=""><![CDATA[
+
+[client-domain-name]
+        ]]></artwork>
+        <t>
+          This form imposes no structure beyond a domain name that
+          identifies the client. Because it need not contain any
+          underscore-prefixed labels, it can be represented directly in
+          the dNSName component of the Subject Alternative Name extension
+          of an X.509 certificate. It is therefore the most suitable form
+          for deployments whose client certificates are issued by a public
+          Certification Authority, or that otherwise rely on the
+          certificate to carry the client's name, since public CAs and the
+          dNSName type do not generally permit underscore-prefixed labels.
+        </t>
+      </section>
     </section>
 
     <section numbered="true" toc="default">
-      <name>Example TLSA records for clients</name>
+      <name>Example TLSA Records for Clients</name>
       <t>
 	The following examples are provided in the textual presentation
 	format of the DNS TLSA record.
@@ -198,8 +242,8 @@
 	  the application "smtp-client". This record specifies the SHA-256 hash
 	  of the subject public key component of the end-entity certificate
 	  corresponding to the client. The certificate usage for this record
-	  is 3 (DANE-EE) and thus is validated in accordance with section
-	  5.1 of RFC 7671.
+	  is 3 (DANE-EE) and thus is validated in accordance with
+	  <xref target="RFC7671" section="5.1" sectionFormat="of"/>.
         </t>
         <artwork name="" type="" align="left" alt=""><![CDATA[
 
@@ -209,11 +253,11 @@ _smtp-client.device1.example.com. IN TLSA (
   	]]></artwork>
       </section>
 
-      <section numbered="true" toc="default">
+      <section anchor="devid_example" numbered="true" toc="default">
         <name>Format 2: DevID</name>
         <t>
 	  An example TLSA record for the device named "sensor7" managed
-          by the organization "example.com" This record specifies the
+          by the organization "example.com". This record specifies the
           SHA-512 hash of the subject public key component of an EE
           certificate corresponding to the client.
         </t>
@@ -229,14 +273,33 @@ sensor7._device.example.com. IN TLSA (
 	  The example below shows a wildcard TLSA record mapped to a
           TLSA record with a DANE-TA usage mode. This allows all client
           identifiers matching the wildcard to be authenticated by client
-          certificates issued by an organization managed Certification
-          Authority.
+          certificates issued by an organization-managed Certification
+          Authority. This example presumes an organization-managed CA
+          willing to issue the underscore-prefixed device name; see
+          <xref target="op_considerations" format="default"/>.
         </t>
         <artwork name="" type="" align="left" alt=""><![CDATA[
 
 *._device.example.com. IN TLSA (
    2 0 1 20efa254ecd5b646e701211095bc3fe4
          423e21941b0b29efb21da57ec944a9b5 )
+  	]]></artwork>
+      </section>
+
+      <section numbered="true" toc="default">
+        <name>Format 3: Freeform Client Identity</name>
+        <t>
+	  An example TLSA record for the client "device73.example.com",
+	  whose certificate is issued by a public Certification Authority.
+	  This record specifies certificate usage 1 (PKIX-EE) and the
+	  SHA-256 hash of the subject public key component of the
+	  end-entity certificate corresponding to the client.
+        </t>
+        <artwork name="" type="" align="left" alt=""><![CDATA[
+
+device73.example.com. IN TLSA (
+   1 1 1 d2abde240d7cd3ee6b4b28c54df034b9
+         7983a1d16e8a410e4561cb106618e971 )
   	]]></artwork>
       </section>
     </section>
@@ -264,18 +327,32 @@ sensor7._device.example.com. IN TLSA (
     </section>
 
     <section anchor="cert_id" numbered="true" toc="default">
-      <name>Client Identifiers in X.509 certificates</name>
+      <name>Client Identifiers in X.509 Certificates</name>
       <t>
-	If the TLS DANE Client Identity extension
-	(see <xref target="client_signal" format="default"/>) is not being used, the
-	client certificate MUST have the client's DNS name
-	specified in the Subject Alternative Name extension's dNSName
-	type, and only one instance of the dNSName type is permitted.
+	The client conveys its DNS name to the server using the TLS DANE
+	Client Identity extension
+	(see <xref target="clientid_extension" format="default"/>).
       </t>
       <t>
-	If the client uses a non-empty TLS DANE Client Identity extension,
-        then with DANE-EE(3), the subject name need not be present in the
-        certificate.
+	With the DANE-EE(3) certificate usage, the presented certificate or
+	public key is matched directly against the TLSA record, so the
+	client's name need not be present in the certificate at all.
+      </t>
+      <t>
+	With the DANE-TA(2), PKIX-TA(0), and PKIX-EE(1) certificate usages,
+	authentication additionally requires the presented certificate to be
+	matched to a reference identity, as specified in
+	<xref target="RFC7671" format="default"/>. In these cases the
+	client's name, as conveyed in the TLS DANE Client Identity extension,
+	MUST be present as a dNSName entry in the certificate's Subject
+	Alternative Name extension, and the server MUST verify that it
+	matches; if it does not, the server MUST abort the connection with a
+	handshake_failure alert.
+      </t>
+      <t>
+	The choice of naming convention (<xref target="owner_format" format="default"/>)
+	interacts with the certificate usage mode; see
+	<xref target="op_considerations" format="default"/> for guidance.
       </t>
     </section>
 
@@ -289,34 +366,54 @@ sensor7._device.example.com. IN TLSA (
       </t>
       <t>
         The DANE Client Identity TLS
-        extension is used for this purpose. This extension can also
-        be used to convey the actual DANE client identity (i.e. domain name)
-        that the TLS server should attempt to authenticate. This is required
-        when using TLS raw public key authentication, since there is no
-        client certificate from which to extract the client's DNS identity.
-        It is also required when the client certificate contains multiple
-        identities, and only a specific one has a DANE record.
+        extension is used for this purpose. A conforming client always
+        conveys its DANE client identity (i.e., domain name) in this
+        extension (see <xref target="clientid_extension" format="default"/>),
+        so the server never needs to derive it from the certificate. This is
+        particularly important when using TLS raw public key authentication,
+        where there is no certificate from which an identity could be
+        extracted, and when a client certificate contains multiple
+        identities, only a specific one of which has a DANE record.
+      </t>
+      <t>
+        The format of this extension and the detailed client and server
+        behavior are specified in <xref target="clientid_extension" format="default"/>.
       </t>
     </section>
 
-    <section numbered="true" toc="default">
+    <section anchor="clientid_extension" numbered="true" toc="default">
       <name>TLS DANE Client Identity Extension</name>
       <t>
-        The DANE Client Identity Extension type, "dane_clientid",
+        The DANE Client Identity extension type, "dane_clientid",
         will have a value assigned and registered in the IANA
-        TLS Extensions registry. Its extension data (if not has the
-        following format:
+        "TLS ExtensionType Values" registry. Its extension_data field
+        always has the following format:
       </t>
       <artwork name="" type="" align="left" alt=""><![CDATA[
 
 opaque ClientName<0..2^8-1>;
         ]]></artwork>
       <t>
-        The ClientName field contains the single domain name of
-        the client in textual presentation format, as described in
-        <xref target="RFC1035" format="default">RFC 1035</xref>,
-        omitting the trailing dot. The lower bound length value of 0
-        octets indicates that no client name is present.
+        The ClientName field contains the full owner name of the
+        client's TLSA record in textual presentation format, as described
+        in <xref target="RFC1035" format="default">RFC 1035</xref>,
+        omitting the trailing dot. This is the exact DNS name the server
+        queries; the server performs no further construction of it (see
+        <xref target="owner_format" format="default"/>). The lower bound
+        length value of 0 octets indicates that no client name is present
+        (this form is used by the TLS server, in its CertificateRequest
+        message, to advertise that it supports the DANE client
+        authentication protocol).
+      </t>
+      <t>
+        A DNS name is a sequence of octets rather than a Unicode string.
+        Where the client's identity includes internationalized labels,
+        those labels MUST be expressed in their A-label (ASCII-Compatible
+        Encoding) form <xref target="RFC5890" format="default"/>, which is
+        the form present in the DNS and, per
+        <xref target="RFC5280" section="7.2" sectionFormat="of"/>, the form
+        required in a certificate's dNSName. U-labels (native Unicode) MUST
+        NOT be used.
       </t>
       <t>
         The wire format of a domain name is limited to 255 octets.
@@ -336,37 +433,50 @@ opaque ClientName<0..2^8-1>;
       </t>
       <t>
         A TLS server implementing this specification MUST send
-        an empty extension of type "dane_clientid" in its
-        CertificateRequest message, to indicate that
+        the "dane_clientid" extension, with a zero-length ClientName,
+        in its CertificateRequest message, to indicate that
         it understands the extension and is capable of performing
-        DANE client authentication.
+        DANE client authentication. The server supplies no name of
+        its own.
       </t>
       <t>
         A TLS client implementing this specification and intending to
-        use DANE client authentication the TLS server, MUST send
-        an extension of type "dane_clientid" in its Certificate message.
-        Per the TLS protocol, the client is only permitted to send the
-        extension if it sees the corresponding empty extension in the
-        server's CertificateRequest message. If the client only needs
-        to indicate that it has a DANE record and that the client's
-        domain name identity can be obtained unambiguously from its
-        certificate, then the extension sent can be empty. If the client
-        needs to send its domain name identity, then the "extension_data"
-        field of the extension MUST contain a "ClientName" data structure
-        populated with the domain name.
+        use DANE client authentication with the TLS server MUST send
+        an extension of type "dane_clientid", with a nonzero-length
+        ClientName populated with the full owner name of the client's
+        corresponding DNS TLSA record (see
+        <xref target="owner_format" format="default"/>), in its
+        Certificate message. Per the TLS protocol, the client is only
+        permitted to send the extension if it sees the corresponding
+        extension in the server's CertificateRequest message.
       </t>
     </section>
 
     <section anchor="changes" numbered="true" toc="default">
-      <name>Changes to Client and Server behavior</name>
+      <name>Changes to Client and Server Behavior</name>
+
+      <section anchor="client_behavior" numbered="true" toc="default">
+      <name>Client Behavior</name>
       <t>
-	A TLS Client conforming to this specification MUST
-	have a <xref target="RFC9364">DNSSEC</xref> signed TLSA record
-        published corresponding to its DNS name and X.509 certificate or
-        public key. The client
-	presents this certificate or public key in the TLS handshake
-	with the server.
+	A TLS client conforming to this specification MUST have a
+	<xref target="RFC9364">DNSSEC</xref> signed TLSA record published
+        corresponding to its DNS name and X.509 certificate or public key.
       </t>
+      <t>
+        A client can only use this protocol with a server that supports it
+        and advertises that support by including a DANE Client Identity
+        extension (with a zero-length ClientName) in its CertificateRequest
+        message. When the client receives such a CertificateRequest, and
+        intends to authenticate using DANE, it presents its certificate or
+        public key and MUST send the DANE Client Identity extension in its
+        Certificate message, carrying a nonzero-length ClientName populated
+        with the full owner name of its TLSA record, as specified in
+        <xref target="clientid_extension" format="default"/>.
+      </t>
+      </section>
+
+      <section anchor="server_behavior" numbered="true" toc="default">
+      <name>Server Behavior</name>
       <t>
         A TLS Server implementing this specification performs the
 	following steps:
@@ -374,22 +484,29 @@ opaque ClientName<0..2^8-1>;
       </t>
       <ol spacing="normal">
         <li>Request a client certificate in the TLS handshake's
-	  "Certificate Request" message, that includes an empty DANE
-          Client Identity extension.</li>
-        <li>The TLS client supplies its certificate in its Certificate
-          message, and if implementing this protocol, also
-          includes the DANE Client Identity extension in the Certificate
-          message.</li>
-        <li>If the client has sent a non-empty DANE Client Identity
-          extension in its Certificate message, then extract the client's
-          domain name from the extension. Otherwise, extract the client
-          identity from the Subject Alternative Name extension's dNSName
-          type.</li>
-        <li>Construct the DNS query name for the corresponding TLSA
-	  record. If the TLS DANE client identity extension was present,
-	  then this name should be used. Otherwise, the single identity
-          from the client certificate is used.</li>
-        <li>Look up the TLSA record set in the DNS. The response MUST be
+	  "Certificate Request" message, that includes a DANE
+          Client Identity extension with a zero-length ClientName.</li>
+        <li>Receive the client's Certificate message, together with any
+          DANE Client Identity extension it carries.</li>
+        <li>If the client sent a nonzero-length ClientName in the DANE
+          Client Identity extension of its Certificate message, extract the
+          client's domain name from it. If the client sent the extension
+          with a zero-length ClientName, this is a protocol violation (a
+          conforming client sends a nonzero-length name, per
+          <xref target="clientid_extension" format="default"/>); the server
+          MUST abort the connection with a handshake_failure alert. If the
+          client did not send the extension at all, it has not requested
+          DANE client authentication, and this specification does not apply
+          to the connection. A server that supports DANE client
+          authentication alongside other modes (for example, traditional TLS
+          client authentication, or accepting unauthenticated clients) then
+          handles the connection according to its general
+          client-authentication policy; a server that requires DANE client
+          authentication MUST abort the connection with a handshake_failure
+          alert.</li>
+        <li>Look up the TLSA record set in the DNS, using the client's
+	  domain name obtained in the previous step directly as the DNS
+	  query name. The response MUST be
 	  cryptographically validated using DNSSEC. The server could
 	  perform DNSSEC validation itself, authenticating the full
           chain back to a configured trust anchor (normally the DNS root).
@@ -398,10 +515,8 @@ opaque ClientName<0..2^8-1>;
           connection, by requiring the Authenticated Data (AD) bit to
           be set in the responses. If DNSSEC validation fails, the server
           MUST either abort the connection with a handshake_failure TLS
-          alert, or treat the client as unauthenticated. The option of
-          treating the client as unauthenticated should typically be a
-          configurable option designed to support the case where client
-          authentication for the application in question is optional.
+          alert, or treat the client as unauthenticated, if TLS server
+          policy allows.
         </li>
         <li>Extract the RDATA of the TLSA records and match them to the
 	  presented client certificate according to the rules specified
@@ -409,118 +524,184 @@ opaque ClientName<0..2^8-1>;
           <xref target="RFC7671" format="default"/>.
 	  If successfully matched, the client is authenticated and
 	  the TLS session proceeds. If unsuccessful, the server MUST
-	  again either terminate the session with a handshake_failure
-          TLS alert, or if configured to do so, treat the client as
-          unauthenticated and proceed with the session.</li>
+	  either abort the connection with a handshake_failure TLS
+          alert, or treat the client as unauthenticated, if TLS server
+          policy allows.</li>
         <li>If there are multiple records in the TLSA record set,
 	  then the client is authenticated as long as at least one of
-	  the TLSA records matches, subject to RFC7671 digest agility,
+	  the TLSA records matches, subject to <xref target="RFC7671" format="default"/> digest agility,
 	  which SHOULD be implemented.</li>
       </ol>
       <t>
-	If the DANE Client Identity extension is empty, and the
-	presented client certificate has multiple distinct reference
-	identifier types (e.g. a dNSName, and an rfc822Name) then
-	TLS servers configured to perform DANE authentication according
-	to this specification should only examine and authenticate the
-	dNSName, and only one such dNSName identity should be present
-        in the certificate, otherwise the server MUST abort the
-        connection with a bad_certificate TLS alert.
+	When the client's name is expected to appear in the certificate,
+	and the certificate contains multiple dNSName identities, the
+	ClientName sent in the TLS DANE Client Identity extension
+	unambiguously indicates which one is the client's name. If the
+	name in the TLS DANE Client Identity extension does not match one
+	of the dNSNames in the certificate, then the server MUST abort the
+	connection with a handshake_failure TLS alert.
       </t>
       <t>
-	If the presented client certificate has multiple dNSName
-	identities, then the client MUST use a non-empty TLS DANE client
-        identity extension to unambiguously indicate one of these
-        identities as its client name to the server. If the name in
-        the TLS DANE client identity extension does not match one of
-        the dNSNames in the certificate, then the server MUST
-        abort the connection with a bad_certificate TLS alert.
-      </t>
-      <t>
-	Servers may have their own whitelisting and authorization rules
+	Servers may have their own allowlisting and authorization rules
 	for which certificates they accept. For example a TLS server may
 	be configured to only allow TLS sessions from clients with
 	certificate identities within a specific domain or set of domains.
-        If such rules are not met, the TLS server again could terminate
-        the connection with a handshake_failure TLS alert.
+        If such rules are not met, the TLS server MUST either abort
+        the connection with a handshake_failure TLS alert, or treat the
+        client as unauthenticated, if TLS server policy allows.
       </t>
+      </section>
     </section>
 
     <section anchor="raw_keys" numbered="true" toc="default">
       <name>Raw Public Keys</name>
       <t>
 	When using <xref target="RFC7250" format="default">raw public keys in TLS</xref>,
-	this specification requires the use of a non-empty TLS DANE Client
-	Identity extension. The associated DANE TLSA records employ only
-	certificate usage 3 (DANE-EE) and a selector value of 1 (SPKI),
-	as described in <xref target="RFC7671" format="default"/>.
+	there is no certificate to carry the client's name, so the DANE
+	Client Identity extension (which a conforming client always sends;
+	see <xref target="clientid_extension" format="default"/>) is the only
+	means by which the client's identity is conveyed. The associated DANE
+	TLSA records employ only certificate usage 3 (DANE-EE) and a selector
+	value of 1 (SPKI), as described in <xref target="RFC7671" format="default"/>.
       </t>
     </section>
+
+    <section anchor="op_considerations" numbered="true" toc="default">
+      <name>Operational Considerations</name>
+      <t>
+        The naming conventions described in
+        <xref target="owner_format" format="default"/> interact with the
+        DANE certificate usage mode a deployment chooses, because of the way
+        a client's name may need to appear in its certificate.
+      </t>
+      <t>
+        <xref target="RFC5280" section="4.2.1.6" sectionFormat="of"/>
+        requires that a dNSName in the Subject Alternative Name extension be
+        in the "preferred name syntax", which permits only letters, digits,
+        and hyphens within a label. Underscore-prefixed labels, such as the
+        _service label of the service-specific format or the _device label
+        of the device-identity format
+        (<xref target="owner_format" format="default"/>), therefore cannot
+        appear in a conformant dNSName. This restriction applies to any
+        dNSName, independent of the DANE certificate usage mode.
+      </t>
+      <t>
+        With the DANE-EE(3) usage the client's name need not appear in the
+        certificate (<xref target="cert_id" format="default"/>), and with
+        raw public keys there is no certificate at all
+        (<xref target="raw_keys" format="default"/>). Deployments using these
+        can use any of the naming formats in
+        <xref target="owner_format" format="default"/>, including those with
+        underscore-prefixed labels, since the name is conveyed only in the
+        TLS DANE Client Identity extension and matched directly against the
+        TLSA record.
+      </t>
+      <t>
+        With the DANE-TA(2), PKIX-TA(0), and PKIX-EE(1) usages the client's
+        name must appear as a dNSName in the certificate and be matched
+        against it (<xref target="cert_id" format="default"/>), and must
+        therefore be in the preferred name syntax.
+      </t>
+      <t>
+        Whether an underscore-bearing name can be used in these latter cases
+        depends in practice on which certification authority issues the
+        client certificate. The preferred name syntax restriction is not
+        enforced by many TLS and X.509 toolkits, which will create, encode,
+        and verify certificates containing underscore-prefixed dNSNames. An
+        organization operating its own certification authority can therefore
+        issue such certificates for use with the DANE-TA usage, as in the
+        wildcard example of <xref target="devid_example" format="default"/>.
+        Commercial certification authorities, however, enforce the
+        restriction and will not issue certificates containing
+        underscore-prefixed dNSNames; deployments relying on them, typically
+        with the PKIX-TA and PKIX-EE usages, cannot use the underscore-bearing
+        formats and should adopt a naming convention that avoids such labels,
+        for example the freeform identity of
+        <xref target="owner_format3" format="default"/>.
+      </t>
+      <t>
+        It is expected that most deployments of this protocol will use the
+        DANE certificate usages (DANE-EE(3) or DANE-TA(2)), often with an
+        organization-managed CA. As described above,
+        the naming conventions of
+        <xref target="owner_format" format="default"/>, including the
+        underscore-bearing formats, work in practice with these usages. The
+        considerations concerning the preferred name syntax apply primarily
+        to the comparatively less common deployments that rely on the
+        PKIX-TA and PKIX-EE usages with certificates from a commercial
+        certification authority.
+      </t>
+    </section>
+
     <section anchor="Acknowledgements" numbered="true" toc="default">
       <name>Acknowledgements</name>
       <t>
-        The authors thank the many members of the IETF DANCE and TLS working
-        groups for helpful comments and input.
+        For detailed reviews and helpful comments, the authors would like to
+        thank Wes Hardaker, Joey Salazar, Eric Rescorla, Paul Wouters, Ash Wilson,
+        Robert Moskowitz, Bill Woodcock, Olle Johansson, Michael Richardson,
+        Sandoche Balakrichenan, Rick van Rein, Mike Ounsworth, Deb Cooley,
+        Rich Salz, and other members of the IETF DANCE and TLS working groups.
       </t>
     </section>
 
     <section anchor="Security" numbered="true" toc="default">
       <name>Security Considerations</name>
       <t>
-	This document updates RFC 6698 by defining the use of the TLSA
-        record for clients. Placing client identities in the DNS may pose
+	This document updates RFC 6698 and RFC 7671 by defining a new way of
+        using DANE for TLS client authentication. Placing client identities
+        in the DNS may pose
         privacy issues for certain applications, depending on the nature
-        of the clients, and the structure and content of the client names.
-        Applications employing this protocol should carefully assess those
-        potential issues.
+        of the clients, the structure and content of the client names,
+        and the mechanisms by which they are queried. In particular, client
+        names that correspond to human persons may pose a graver privacy risk
+        than machine identities. Applications employing this protocol should
+        carefully assess those potential issues, as described below.
       </t>
       <t>
         A design goal of TLS 1.3 is that the client identity is encrypted
         in the Certificate message, and thus protected from disclosure
-        on the wire. DANE authentication however relies on the peer (the
-        TLS server in this case) looking up the client's DANE record
-        in the DNS. Although, protocol specifications and implementions
+        on the wire. DANE client authentication however relies on the peer (the
+        TLS server in this case) subsequently looking up the client's DANE
+        record in the DNS. Although protocol specifications and implementations
         to encrypt DNS transport exist, they are very far from ubiquitously
         deployed.  Deployers of DANCE client authentication should thus
-        evaluate the risks of the client name being leaked in this manner,
-        until encrypted DNS transport becomes the norm.
-      </t>
-      <t>
-        One possible way to address this is for the client to construct
-        and send its DANE record and the corresponding full DNSSEC
-        authentication chain to the TLS server in a new Certificate
-        extension within the handshake. A specification to do this in
-        the other direction (from the server to the client) already
-        exists: <xref target="RFC9102" format="default">"TLS DNSSEC Chain Extension"</xref>.
-        However, there are several challenges when considering such an
-        approach from the client end. It is quite a heavy
-        weight operation that some constrained clients may have challenges
-        with. In order to construct the DANE authentication chain, the
-        client would need to perform DNS queries which would still
-        leak its identity to the local network environment without
-        encrypted DNS. Lastly, there maybe client side network impediments to
-        making this work, e.g. middleboxes that prevent DNSSEC enabled
-        queries from succeeding - one of the original motivations for
-        RFC 9102 in the first place. Nevertheless, if appetite to implement
-        this mechanism exists, a future version of this specification could
-        define the details.
+        evaluate the risks of the client name being leaked in this manner
+        by the server, until encrypted DNS transport becomes the norm.
+        A possible way to avoid the TLS server looking up the client's DANE
+        record in the DNS is described in <xref target="future-work" format="default" />,
+        but it has a number of significant challenges.
       </t>
       <t>
         The service specific client identity form lends itself to a
         structure that might make it easy for the same client to have
         multiple identities corresponding to different applications using
-        the same public key (e.g. by using wildcards and DANE-EE mode),
-        which could make this protocol susceptible to corss protocol
+        the same public key (e.g., by using wildcards and DANE-EE mode),
+        which could make this protocol susceptible to cross-protocol
         attacks where traffic is redirected from one service to another.
         Deployers of this protocol should avoid this by not sharing per
         client credentials across distinct applications.
+      </t>
+      <t>
+        Because this mechanism cannot operate over TLS 1.2 or earlier
+        (see <xref target="intro" format="default"/>), a
+        server that requires DANE client authentication MUST NOT negotiate
+        a protocol version below TLS 1.3 (or DTLS 1.3) for connections
+        where such authentication is mandatory; otherwise the client would
+        be unable to convey its DANE identity and authentication could be
+        silently bypassed.
+      </t>
+      <t>
+        This specification uses a single, generic TLS alert
+        (handshake_failure) for the various client authentication failure
+        conditions it describes, to avoid leaking unnecessary information
+        to potential adversaries.
       </t>
     </section>
 
     <section anchor="IANA" numbered="true" toc="default">
       <name>IANA Considerations</name>
       <t>
-        IANA is requested to create the following entry in the "TLS ExtensionTypes Values" registry:
+        IANA is requested to create the following entry in the "TLS ExtensionType Values" registry:
       </t>
       <t>
         Extension Name "dane_clientid" with value TBD, "TLS 1.3" column values set to "CR, CT", "DTLS-Only" column set to "N", and "Recommended" column set to "N".
@@ -543,7 +724,7 @@ opaque ClientName<0..2^8-1>;
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.1035.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.2119.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5280.xml"/>
-        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6347.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.5890.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.6698.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7250.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7671.xml"/>
@@ -563,6 +744,34 @@ opaque ClientName<0..2^8-1>;
         </reference>
       </references>
     </references>
+
+    <section anchor="future-work" numbered="true" removeInRFC="false"
+        toc="include" pn="section-appendix.a">
+      <name>Possible Future Work</name>
+      <t>
+        One possible way to address the TLS server-side client identity
+        leak is to suppress the need for the TLS server to lookup the
+        client's DANE record, and instead to have the client supply it.
+        The client could query its own DANE record and the corresponding
+        full DNSSEC authentication chain, and assemble this in a new
+        Certificate Extension that is sent to the TLS server within the handshake.
+        The TLS server would then authenticate this full chain. A specification to
+        do this in the other direction (from the server to the client) already exists:
+        <xref target="RFC9102" format="default">"TLS DNSSEC Chain Extension"</xref>.
+        However, there are several challenges when considering such an
+        approach from the client end. It is quite a heavyweight
+        operation that some constrained clients may have challenges
+        with (for example LoRaWAN clients). In order to construct the DANE
+        authentication chain, the client would need to perform DNS queries which
+        would still leak its identity to the local network environment without
+        encrypted DNS. Lastly, there may be client-side network impediments to
+        making this work, e.g., middleboxes that prevent DNSSEC-enabled
+        queries from succeeding - one of the original motivations for
+        RFC 9102 in the first place. Nevertheless, if appetite to implement
+        this mechanism exists, a future version of this specification could
+        define the details.
+      </t>
+    </section>
 
   </back>
 
