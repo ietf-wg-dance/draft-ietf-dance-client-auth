@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-ietf-dance-client-auth-12"
+        docName="draft-ietf-dance-client-auth-13"
         ipr="trust200902" updates="6698,7671" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -41,7 +41,7 @@
   <front>
 
     <title abbrev="TLSA client authentication">TLS Client Authentication via DANE TLSA records</title>
-    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-12"/>
+    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-13"/>
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Salesforce</organization>
       <address>
@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="6" month="7" year="2026"/>
+    <date day="19" month="7" year="2026"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
@@ -90,7 +90,7 @@
     <section anchor="intro" numbered="true" toc="default">
       <name>Introduction and Motivation</name>
       <t>
-	The TLS <xref target="RFC8446" format="default"/> and DTLS
+	The TLS <xref target="RFC9846" format="default"/> and DTLS
         <xref target="RFC9147" format="default"/> protocols optionally support the authentication
         of clients using <xref target="RFC5280" format="default">X.509 certificates</xref> or
 	<xref target="RFC7250" format="default">raw public keys</xref>. TLS applications
@@ -112,7 +112,7 @@
         re-uses the TLS handshake.
       </t>
       <t>
-        This specification requires TLS 1.3 <xref target="RFC8446"/> or
+        This specification requires TLS 1.3 <xref target="RFC9846"/> or
         DTLS 1.3 <xref target="RFC9147"/> (or later versions). It relies on
         extensions carried within the CertificateRequest and Certificate
         handshake messages, and such per-certificate extensions are not
@@ -729,9 +729,9 @@ opaque ClientName<0..2^8-1>;
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7250.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7671.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
-        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8446.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9147.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9364.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9846.xml"/>
       </references>
       <references>
         <name>Informative References</name>
