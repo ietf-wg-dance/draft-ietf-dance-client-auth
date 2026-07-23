@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-ietf-dance-client-auth-12"
+        docName="draft-ietf-dance-client-auth-13"
         ipr="trust200902" updates="6698,7671" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -41,7 +41,7 @@
   <front>
 
     <title abbrev="TLSA client authentication">TLS Client Authentication via DANE TLSA records</title>
-    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-12"/>
+    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-13"/>
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Salesforce</organization>
       <address>
@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="6" month="7" year="2026"/>
+    <date day="23" month="7" year="2026"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
@@ -90,7 +90,7 @@
     <section anchor="intro" numbered="true" toc="default">
       <name>Introduction and Motivation</name>
       <t>
-	The TLS <xref target="RFC8446" format="default"/> and DTLS
+	The TLS <xref target="RFC9846" format="default"/> and DTLS
         <xref target="RFC9147" format="default"/> protocols optionally support the authentication
         of clients using <xref target="RFC5280" format="default">X.509 certificates</xref> or
 	<xref target="RFC7250" format="default">raw public keys</xref>. TLS applications
@@ -112,7 +112,7 @@
         re-uses the TLS handshake.
       </t>
       <t>
-        This specification requires TLS 1.3 <xref target="RFC8446"/> or
+        This specification requires TLS 1.3 <xref target="RFC9846"/> or
         DTLS 1.3 <xref target="RFC9147"/> (or later versions). It relies on
         extensions carried within the CertificateRequest and Certificate
         handshake messages, and such per-certificate extensions are not
@@ -658,18 +658,38 @@ opaque ClientName<0..2^8-1>;
         carefully assess those potential issues, as described below.
       </t>
       <t>
-        A design goal of TLS 1.3 is that the client identity is encrypted
-        in the Certificate message, and thus protected from disclosure
-        on the wire. DANE client authentication however relies on the peer (the
-        TLS server in this case) subsequently looking up the client's DANE
-        record in the DNS. Although protocol specifications and implementations
-        to encrypt DNS transport exist, they are very far from ubiquitously
-        deployed.  Deployers of DANCE client authentication should thus
-        evaluate the risks of the client name being leaked in this manner
-        by the server, until encrypted DNS transport becomes the norm.
+        In TLS 1.3, the client identity is encrypted in the Certificate message,
+        and thus normally protected from disclosure on the wire. DANE authentication
+        however relies on the peer (the TLS server in this case) subsequently
+        looking up the client's DANE record in the DNS. Since encrypted DNS
+        transport is not yet widely deployed, this can expose the client name in
+        the clear, and thus deployers of DANCE client authentication should carefully
+        evaluate any resulting privacy risks. To mitigate this risk, DANCE deployments
+        should ensure encrypted DNS is used to the extent possible.
+        This could involve turning on encrypted DNS between the DANCE TLS server and
+        its local resolver, enabling it at the authoritative servers hosting
+        the DANE client records, and using data minimization techniques like query
+        name minimization <xref target="RFC9156" format="default"/> to avoid exposing the most specific parts of the client
+        DNS names to layers that (largely) have no encrypted DNS today (e.g., the DNS
+        root, and many DNS Top Level Domains).
+     </t>
+     <t>
         A possible way to avoid the TLS server looking up the client's DANE
-        record in the DNS is described in <xref target="future-work" format="default" />,
-        but it has a number of significant challenges.
+        record in the DNS, is to have the client instead perform the DNS
+        lookups for its own DANE record set, and assemble it and the associated
+        full DNSSEC authentication chain in a new Certificate Extension that is
+        sent to the TLS server. A specification to do this in the other direction
+        (from the server to the client) already exists:
+        <xref target="RFC9102" format="default">"TLS DNSSEC Chain Extension"</xref>.
+        However, there are several challenges with this approach: It is quite a
+        heavyweight operation that some constrained clients may have challenges
+        with (for example LoRaWAN clients). In order to construct the DANE
+        authentication chain, the client would need to perform DNS queries which
+        would still leak its identity to the local network environment without
+        encrypted DNS. Lastly, there may be client-side network impediments to
+        making this work, e.g., middleboxes that prevent DNSSEC-enabled queries
+        from succeeding - one of the original motivations for RFC 9102 in the first
+        place.
       </t>
       <t>
         The service specific client identity form lends itself to a
@@ -729,13 +749,14 @@ opaque ClientName<0..2^8-1>;
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7250.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7671.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
-        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8446.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9147.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9364.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9846.xml"/>
       </references>
       <references>
         <name>Informative References</name>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9102.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9156.xml"/>
         <reference anchor="SRVREG" target="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.txt">
           <front>
             <title>Service Name and Transport Protocol Port Number Registry</title>
@@ -744,34 +765,6 @@ opaque ClientName<0..2^8-1>;
         </reference>
       </references>
     </references>
-
-    <section anchor="future-work" numbered="true" removeInRFC="false"
-        toc="include" pn="section-appendix.a">
-      <name>Possible Future Work</name>
-      <t>
-        One possible way to address the TLS server-side client identity
-        leak is to suppress the need for the TLS server to lookup the
-        client's DANE record, and instead to have the client supply it.
-        The client could query its own DANE record and the corresponding
-        full DNSSEC authentication chain, and assemble this in a new
-        Certificate Extension that is sent to the TLS server within the handshake.
-        The TLS server would then authenticate this full chain. A specification to
-        do this in the other direction (from the server to the client) already exists:
-        <xref target="RFC9102" format="default">"TLS DNSSEC Chain Extension"</xref>.
-        However, there are several challenges when considering such an
-        approach from the client end. It is quite a heavyweight
-        operation that some constrained clients may have challenges
-        with (for example LoRaWAN clients). In order to construct the DANE
-        authentication chain, the client would need to perform DNS queries which
-        would still leak its identity to the local network environment without
-        encrypted DNS. Lastly, there may be client-side network impediments to
-        making this work, e.g., middleboxes that prevent DNSSEC-enabled
-        queries from succeeding - one of the original motivations for
-        RFC 9102 in the first place. Nevertheless, if appetite to implement
-        this mechanism exists, a future version of this specification could
-        define the details.
-      </t>
-    </section>
 
   </back>
 
