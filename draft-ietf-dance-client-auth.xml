@@ -56,6 +56,13 @@
         <!-- uri and facsimile elements may also be added -->
       </address>
     </author>
+    <author fullname="Michael Richardson" initials="M.C." surname="Richardson">
+      <organization>Sandelman Software Works Inc</organization>
+      <address>
+        <email>mcr+ietf@sandelman.ca</email>
+        <!-- uri and facsimile elements may also be added -->
+      </address>
+    </author>
 
     <date day="23" month="7" year="2026"/>
     <!-- Meta-data Declarations -->
@@ -1295,7 +1302,7 @@ opaque ClientName<0..2^8-1>;
       <t>
         For detailed reviews and helpful comments, the authors would like to
         thank Wes Hardaker, Joey Salazar, Eric Rescorla, Paul Wouters, Ash Wilson,
-        Robert Moskowitz, Bill Woodcock, Olle Johansson, Michael Richardson,
+        Robert Moskowitz, Bill Woodcock, Olle Johansson,
         Sandoche Balakrichenan, Rick van Rein, Mike Ounsworth, Deb Cooley,
         Rich Salz, and other members of the IETF DANCE and TLS working groups.
       </t>
