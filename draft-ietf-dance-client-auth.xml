@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-ietf-dance-client-auth-13"
+        docName="draft-ietf-dance-client-auth-14"
         ipr="trust200902" updates="6698,7671" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -41,7 +41,7 @@
   <front>
 
     <title abbrev="TLSA client authentication">TLS Client Authentication via DANE TLSA records</title>
-    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-13"/>
+    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-14"/>
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Salesforce</organization>
       <address>
@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="23" month="7" year="2026"/>
+    <date day="11" month="9" year="2026"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
@@ -513,10 +513,14 @@ opaque ClientName<0..2^8-1>;
           Alternatively, it could also be configured to trust responses
           obtained via a validating resolver to which it has a secure
           connection, by requiring the Authenticated Data (AD) bit to
-          be set in the responses. If DNSSEC validation fails, the server
-          MUST either abort the connection with a handshake_failure TLS
-          alert, or treat the client as unauthenticated, if TLS server
-          policy allows.
+          be set in the responses. If any result other than a DNSSEC
+          validated TLSA record set is returned, the server MUST either
+          abort the connection with a handshake_failure TLS alert, or,
+          if server policy allows, treat the client as unauthenticated.
+          Such other results include DNSSEC validation failures,
+          unauthenticated answers (because of an unsigned DNS zone or
+          insecure delegation along the path to the TLSA owner name),
+          NXDOMAIN, or NODATA responses.
         </li>
         <li>Extract the RDATA of the TLSA records and match them to the
 	  presented client certificate according to the rules specified
