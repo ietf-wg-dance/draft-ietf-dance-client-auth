@@ -30,8 +30,8 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-ietf-dance-client-auth-14"
-        ipr="trust200902" updates="6698,7671" obsoletes=""
+        docName="draft-ietf-dance-client-auth-15"
+        ipr="trust200902" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
         symRefs="true" sortRefs="true" version="3">
@@ -41,7 +41,7 @@
   <front>
 
     <title abbrev="TLSA client authentication">TLS Client Authentication via DANE TLSA records</title>
-    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-14"/>
+    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-15"/>
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Salesforce</organization>
       <address>
@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="11" month="9" year="2026"/>
+    <date day="27" month="10" year="2026"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
@@ -73,9 +73,8 @@
     <abstract>
       <t>The DANE TLSA protocol
       describes how to publish Transport Layer Security (TLS) server
-      certificates or public keys in the DNS. This document updates RFC
-      6698 and RFC 7671.
-      It describes how to use the TLSA record to publish
+      certificates or public keys in the DNS. This document
+      describes how to use the TLSA record to publish
       client certificates or public keys, and also the rules and
       considerations for using them with TLS. In addition, it defines
       a new TLS extension, DANE Client Identity, to convey the client's
@@ -114,10 +113,14 @@
       <t>
         This specification requires TLS 1.3 <xref target="RFC9846"/> or
         DTLS 1.3 <xref target="RFC9147"/> (or later versions). It relies on
-        extensions carried within the CertificateRequest and Certificate
-        handshake messages, and such per-certificate extensions are not
-        available in earlier versions of the protocols, whose Certificate
-        message carries no extension fields.
+        extensions carried within the encrypted CertificateRequest and
+        Certificate handshake messages. Earlier versions of the protocols
+        do not support such extensions, since their Certificate message
+        carries no extension fields, and they send these messages
+        unencrypted. Carrying the client's DANE identity inside encrypted
+        handshake messages protects it from disclosure on the network path;
+        however, see <xref target="Security" format="default"/> regarding
+        its possible exposure through DNS queries.
       </t>
       <section anchor="reserved-words"><name>Requirements Language</name>
       <t>The key words &quot;MUST&quot;, &quot;MUST NOT&quot;, &quot;REQUIRED&quot;, &quot;SHALL&quot;, &quot;SHALL NOT&quot;,
@@ -150,6 +153,15 @@
         client conveys the full owner name and the server performs no
         construction of its own.
       </t>
+      <t>
+        Formats 1 and 2 below use underscore-prefixed labels. Their global
+        underscored node names <xref target="RFC8552" format="default"/>,
+        "_client" and "_device" respectively, are registered for the TLSA
+        RR type (see <xref target="IANA" format="default"/>). An application
+        that defines its own naming convention employing underscore-prefixed
+        labels needs to register the corresponding global underscored node
+        name, as required by <xref target="RFC8552" format="default"/>.
+      </t>
 
       <section anchor="owner_format1" numbered="true" toc="default">
         <name>Format 1: Service Specific Client Identity</name>
@@ -160,11 +172,12 @@
         </t>
         <artwork name="" type="" align="left" alt=""><![CDATA[
 
-[_service].[client-domain-name]
+[_service]._client.[client-domain-name]
         ]]></artwork>
         <t>
-          The first label identifies the application service name. The
-	  remaining labels form the client domain name.
+          The first label identifies the application service name. It is
+          followed by the fixed label "_client", and the remaining labels
+          form the client domain name.
         </t>
         <t>
 	  Encoding the application service name into the owner name allows
@@ -174,9 +187,15 @@
 	  both TLS and DTLS.
         </t>
         <t>
-	  The _service label could be a custom string for an application,
-	  but more commonly is expected to be a service name registered in
-	  the <xref target="SRVREG" format="default">IANA Service Name Registry</xref>.
+          The "_client" label is the global underscored node name of this
+          format <xref target="RFC8552" format="default"/>, and the _service
+          label is scoped beneath it. The _service label is expected to be
+          an underscore-prefixed service name registered in
+          the <xref target="SRVREG" format="default">IANA Service Name Registry</xref>,
+          but could also be a custom string defined by an application; such
+          a string should be chosen so as not to coincide with a registered
+          service name. Labels beneath "_client" are not entered in the
+          "Underscored and Globally Scoped DNS Node Names" registry.
         </t>
         <t>
 	  The RDATA or data field portion of the TLSA record is formed
@@ -199,7 +218,8 @@
           The "_device" label interposed between the client device name
           labels and the organization domain labels allows management of
           all client identities to be delegated to a subzone or to another
-          party.
+          party. The "_device" label is the global underscored node name of
+          this format <xref target="RFC8552" format="default"/>.
         </t>
       </section>
 
@@ -239,7 +259,7 @@
         <name>Format 1: Service Specific Client Identity</name>
         <t>
 	  An example TLSA record for the client "device1.example.com." and
-	  the application "smtp-client". This record specifies the SHA-256 hash
+	  the application service "smtp". This record specifies the SHA-256 hash
 	  of the subject public key component of the end-entity certificate
 	  corresponding to the client. The certificate usage for this record
 	  is 3 (DANE-EE) and thus is validated in accordance with
@@ -247,7 +267,7 @@
         </t>
         <artwork name="" type="" align="left" alt=""><![CDATA[
 
-_smtp-client.device1.example.com. IN TLSA (
+_smtp._client.device1.example.com. IN TLSA (
    3 1 1 d2abde240d7cd3ee6b4b28c54df034b9
          7983a1d16e8a410e4561cb106618e971 )
   	]]></artwork>
@@ -395,9 +415,9 @@ opaque ClientName<0..2^8-1>;
         ]]></artwork>
       <t>
         The ClientName field contains the full owner name of the
-        client's TLSA record in textual presentation format, as described
-        in <xref target="RFC1035" format="default">RFC 1035</xref>,
-        omitting the trailing dot. This is the exact DNS name the server
+        client's TLSA record in the common display format described in
+        <xref target="RFC9499" section="2" sectionFormat="of"/>, without
+        the trailing dot. This is the exact DNS name the server
         queries; the server performs no further construction of it (see
         <xref target="owner_format" format="default"/>). The lower bound
         length value of 0 octets indicates that no client name is present
@@ -406,30 +426,18 @@ opaque ClientName<0..2^8-1>;
         authentication protocol).
       </t>
       <t>
-        A DNS name is a sequence of octets rather than a Unicode string.
-        Where the client's identity includes internationalized labels,
-        those labels MUST be expressed in their A-label (ASCII-Compatible
-        Encoding) form <xref target="RFC5890" format="default"/>, which is
-        the form present in the DNS and, per
+        Each label of the name MUST consist only of ASCII letters, digits,
+        hyphens, and underscores, so that the name never requires the
+        escape sequences of the <xref target="RFC1035" format="default"/>
+        presentation format. The name MUST be a valid domain name, and is
+        therefore at most 255 octets in wire format
+        <xref target="RFC1035" format="default"/>. Given the character
+        restriction above, it is then at most 253 octets long in this form,
+        and so always fits within the ClientName field. Internationalized labels MUST be
+        expressed in their A-label form <xref target="RFC5890" format="default"/>,
+        which is the form present in the DNS and, per
         <xref target="RFC5280" section="7.2" sectionFormat="of"/>, the form
-        required in a certificate's dNSName. U-labels (native Unicode) MUST
-        NOT be used.
-      </t>
-      <t>
-        The wire format of a domain name is limited to 255 octets.
-        In keeping with the practice of most TLS extensions, this
-        extension specifies the use of the textual presentation
-        format of domain names instead. In theory, the presentation
-        format can exceed 255 characters because it allows the
-        expression of any arbitrary octet with the "\DDD" sequence
-        of characters (where DDD is the decimal value). Applications
-        using this extension (and the DANE TLSA Client Authentication
-        protocol more generally) should ensure that client domain names
-        being used do not need to resort to the \DDD syntax by limiting
-        the alphabet suitably, such as only allowing letters, digits,
-        hyphens, and underscores. This ensures that the presentation
-        format client domain name will comfortably fit within the 255
-        octet limit.
+        required in a certificate's dNSName; U-labels MUST NOT be used.
       </t>
       <t>
         A TLS server implementing this specification MUST send
@@ -583,7 +591,7 @@ opaque ClientName<0..2^8-1>;
         requires that a dNSName in the Subject Alternative Name extension be
         in the "preferred name syntax", which permits only letters, digits,
         and hyphens within a label. Underscore-prefixed labels, such as the
-        _service label of the service-specific format or the _device label
+        _service and _client labels of the service-specific format or the _device label
         of the device-identity format
         (<xref target="owner_format" format="default"/>), therefore cannot
         appear in a conformant dNSName. This restriction applies to any
@@ -644,15 +652,17 @@ opaque ClientName<0..2^8-1>;
         thank Wes Hardaker, Joey Salazar, Eric Rescorla, Paul Wouters, Ash Wilson,
         Robert Moskowitz, Bill Woodcock, Olle Johansson, Michael Richardson,
         Sandoche Balakrichenan, Rick van Rein, Mike Ounsworth, Deb Cooley,
-        Rich Salz, and other members of the IETF DANCE and TLS working groups.
+        Rich Salz, Kaveh Ranjbar, Matt Brown, and other members of the IETF DANCE and TLS
+        working groups.
       </t>
     </section>
 
     <section anchor="Security" numbered="true" toc="default">
       <name>Security Considerations</name>
       <t>
-	This document updates RFC 6698 and RFC 7671 by defining a new way of
-        using DANE for TLS client authentication. Placing client identities
+	This document extends the use of DANE TLSA records
+        <xref target="RFC6698"/> <xref target="RFC7671"/> to TLS client
+        authentication. Placing client identities
         in the DNS may pose
         privacy issues for certain applications, depending on the nature
         of the clients, the structure and content of the client names,
@@ -724,6 +734,8 @@ opaque ClientName<0..2^8-1>;
 
     <section anchor="IANA" numbered="true" toc="default">
       <name>IANA Considerations</name>
+      <section anchor="iana_tls" numbered="true" toc="default">
+      <name>TLS ExtensionType Value</name>
       <t>
         IANA is requested to create the following entry in the "TLS ExtensionType Values" registry:
       </t>
@@ -734,6 +746,24 @@ opaque ClientName<0..2^8-1>;
         The 'N' designation in the "Recommended" column is because this
         extension has very specific use cases.
       </t>
+      </section>
+      <section anchor="iana_underscore" numbered="true" toc="default">
+      <name>Underscored and Globally Scoped DNS Node Names</name>
+      <t>
+        IANA is requested to add the following entries to the "Underscored
+        and Globally Scoped DNS Node Names" registry
+        <xref target="RFC8552" format="default"/>:
+      </t>
+      <table align="left">
+        <thead>
+          <tr><th>RR Type</th><th>_NODE NAME</th><th>Reference</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>TLSA</td><td>_client</td><td>This document, <xref target="owner_format1" format="default"/></td></tr>
+          <tr><td>TLSA</td><td>_device</td><td>This document, <xref target="owner_format2" format="default"/></td></tr>
+        </tbody>
+      </table>
+      </section>
     </section>
 
   </middle>
@@ -753,8 +783,10 @@ opaque ClientName<0..2^8-1>;
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7250.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7671.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8174.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8552.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9147.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9364.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9499.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9846.xml"/>
       </references>
       <references>
