@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="29" month="10" year="2026"/>
+    <date day="2" month="11" year="2026"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
@@ -108,7 +108,7 @@
 	In this document, the term TLS is used generically to describe
 	both the TLS and DTLS (Datagram Transport Layer Security) protocols.
         The protocol changes described can also be used with QUIC, since QUIC
-        re-uses the TLS handshake.
+        re-uses the TLS handshake <xref target="RFC9001" format="default"/>.
       </t>
       <t>
         This specification requires TLS 1.3 <xref target="RFC9846"/> or
@@ -199,9 +199,9 @@
           The "_client" label is the global underscored node name of this
           format <xref target="RFC8552" format="default"/>, and the _service
           label is scoped beneath it. The _service label is expected to be
-          an underscore-prefixed service name registered in
-          the <xref target="SRVREG" format="default">IANA Service Name Registry</xref>,
-          but could also be a custom string defined by an application; such
+          a service name registered in
+          the <xref target="SRVREG" format="default">IANA Service Name Registry</xref>
+          prefixed with an underscore, but could also be a custom string defined by an application; such
           a string should be chosen so as not to coincide with a registered
           service name. Labels beneath "_client" are not entered in the
           "Underscored and Globally Scoped DNS Node Names" registry.
@@ -283,7 +283,7 @@ _smtp._client.device1.example.com. IN TLSA (
       </section>
 
       <section anchor="devid_example" numbered="true" toc="default">
-        <name>Format 2: DevID</name>
+        <name>Format 2: IoT Device Identity</name>
         <t>
 	  An example TLSA record for the device named "sensor7" managed
           by the organization "example.com". This record specifies the
@@ -327,8 +327,8 @@ sensor7._device.example.com. IN TLSA (
         <artwork name="" type="" align="left" alt=""><![CDATA[
 
 device73.example.com. IN TLSA (
-   1 1 1 d2abde240d7cd3ee6b4b28c54df034b9
-         7983a1d16e8a410e4561cb106618e971 )
+   1 1 1 d13576c4333389c6489df3566f29a449
+         b413f3225ff87a3fb028535596a7af08 )
   	]]></artwork>
       </section>
     </section>
@@ -445,7 +445,8 @@ opaque ClientName<0..2^8-1>;
         and so always fits within the ClientName field. Internationalized labels MUST be
         expressed in their A-label form <xref target="RFC5890" format="default"/>,
         which is the form present in the DNS and, per
-        <xref target="RFC5280" section="7.2" sectionFormat="of"/>, the form
+        <xref target="RFC5280" section="7.2" sectionFormat="of"/> as updated
+        by <xref target="RFC9549" format="default"/>, the form
         required in a certificate's dNSName; U-labels MUST NOT be used.
       </t>
       <t>
@@ -463,9 +464,12 @@ opaque ClientName<0..2^8-1>;
         ClientName populated with the full owner name of the client's
         corresponding DNS TLSA record (see
         <xref target="owner_format" format="default"/>), in its
-        Certificate message. Per the TLS protocol, the client is only
-        permitted to send the extension if it sees the corresponding
-        extension in the server's CertificateRequest message.
+        Certificate message. Per
+        <xref target="RFC9846" section="4.5.1" sectionFormat="of"/>, the
+        client may only send the extension if the server's
+        CertificateRequest message included it; a server receiving it
+        otherwise aborts the handshake with an "unsupported_extension"
+        alert (<xref target="RFC9846" section="4.3" sectionFormat="of"/>).
       </t>
     </section>
 
@@ -529,7 +533,10 @@ opaque ClientName<0..2^8-1>;
           client-authentication policy; a server that requires DANE client
           authentication MUST abort the connection with a handshake_failure
           alert.</li>
-        <li>Look up the TLSA record set in the DNS, using the client's
+        <li>If the server applies name-based authorization rules (see
+          below), it SHOULD first check the client's domain name against
+          them, and reject a name that is not permitted without performing
+          the lookup. Otherwise, look up the TLSA record set in the DNS, using the client's
 	  domain name obtained in the previous step directly as the DNS
 	  query name. The response MUST be
 	  cryptographically validated using DNSSEC. The server could
@@ -580,12 +587,22 @@ opaque ClientName<0..2^8-1>;
       </t>
       <t>
 	Servers may have their own allowlisting and authorization rules
-	for which certificates they accept. For example a TLS server may
+	for which client names they accept. For example a TLS server may
 	be configured to only allow TLS sessions from clients with
 	client names within a specific domain or set of domains.
         If such rules are not met, the TLS server MUST either abort
         the connection with a handshake_failure TLS alert, or treat the
         client as unauthenticated, if TLS server policy allows.
+      </t>
+      <t>
+        Because the ClientName is supplied by a not yet authenticated peer,
+        the lookup in step 4 can be directed at any name, including names in
+        zones whose authoritative servers respond slowly or not at all. This
+        matters most for servers that accept arbitrary client names, where
+        no allowlist applies. Servers should bound the time spent on the
+        lookup, treating a timeout as a failure under step 4, and should rely
+        on caching of TLSA responses, per their TTLs, to avoid repeated
+        queries.
       </t>
       </section>
     </section>
@@ -599,7 +616,13 @@ opaque ClientName<0..2^8-1>;
 	see <xref target="clientid_extension" format="default"/>) is the only
 	means by which the client's identity is conveyed. The associated DANE
 	TLSA records employ only certificate usage 3 (DANE-EE) and a selector
-	value of 1 (SPKI), as described in <xref target="RFC7671" format="default"/>.
+	value of 1 (SPKI), as described in <xref target="RFC7671" section="5.1" sectionFormat="of"/>.
+	The client's public key is bound to its name solely by these
+	DNSSEC-validated TLSA records: the server matches the
+	SubjectPublicKeyInfo in the client's Certificate message against them,
+	either in full (matching type 0) or by its SHA-256 or SHA-512 digest
+	(matching types 1 and 2), and the client's CertificateVerify message
+	proves possession of the corresponding private key.
       </t>
     </section>
 
@@ -668,6 +691,41 @@ opaque ClientName<0..2^8-1>;
         PKIX-TA and PKIX-EE usages with certificates from a commercial
         certification authority.
       </t>
+      <t>
+        The TLSA publisher requirements and operational considerations in
+        Sections 8 and 13 of <xref target="RFC7671" format="default"/> apply to
+        client TLSA records, with the roles of client and server reversed.
+        In particular, when a client's key or certificate is rotated, TLSA
+        records matching the new credential should be published, and the
+        TTL of the existing records allowed to elapse, before the client
+        starts using it. With the DANE-EE(3) usage, certificate expiration
+        is ignored (<xref target="RFC7671" section="5.1" sectionFormat="of"/>),
+        so removing or replacing the client's TLSA records is the means of
+        revoking its credential. Servers may continue to accept a revoked
+        credential until previously cached records expire, and an attacker
+        able to replay them can extend this until their DNSSEC signatures
+        expire. The TTL and signature validity period of client TLSA records
+        should be chosen with this in mind.
+      </t>
+      <t>
+        Client authentication depends on the server obtaining
+        DNSSEC-validated responses, and so on the availability of its
+        validating resolver and of correctly signed client zones. An outage
+        of either causes all affected clients to fail authentication, or,
+        where server policy allows, to be treated as unauthenticated
+        (<xref target="server_behavior" format="default"/>). Operators should
+        provision redundant validating resolvers and monitor the DNSSEC
+        signatures of client zones.
+      </t>
+      <t>
+        Although the server sends only a generic alert on authentication
+        failure (<xref target="Security" format="default"/>), it should log
+        the specific cause (e.g., DNSSEC validation failure, an insecure
+        response, NXDOMAIN or NODATA, lookup timeout, TLSA mismatch, or
+        rejection by local policy) along with the ClientName, so that
+        operators can diagnose failures. Such logs contain client
+        identities and should be protected accordingly.
+      </t>
     </section>
 
     <section anchor="Acknowledgements" numbered="true" toc="default">
@@ -700,12 +758,14 @@ opaque ClientName<0..2^8-1>;
         In TLS 1.3, the client identity is encrypted in the Certificate message,
         and thus normally protected from disclosure on the wire. DANE authentication
         however relies on the peer (the TLS server in this case) subsequently
-        looking up the client's DANE record in the DNS. Since encrypted DNS
-        transport is not yet widely deployed, this can expose the client name in
-        the clear, and thus deployers of DANCE client authentication should carefully
-        evaluate any resulting privacy risks. To mitigate this risk, DANCE deployments
+        looking up the client's DANE record in the DNS. Unless encrypted DNS
+        transport is used (e.g., DNS over TLS <xref target="RFC7858" format="default"/>,
+        DNS over HTTPS <xref target="RFC8484" format="default"/>, or DNS over
+        QUIC <xref target="RFC9250" format="default"/>), this can expose the client name in
+        the clear, and thus deployers of DANE client authentication should carefully
+        evaluate any resulting privacy risks. To mitigate this risk, deployments
         should ensure encrypted DNS is used to the extent possible.
-        This could involve turning on encrypted DNS between the DANCE TLS server and
+        This could involve turning on encrypted DNS between the TLS server and
         its local resolver, enabling it at the authoritative servers hosting
         the DANE client records, and using data minimization techniques like query
         name minimization <xref target="RFC9156" format="default"/> to avoid exposing the most specific parts of the client
@@ -812,12 +872,17 @@ opaque ClientName<0..2^8-1>;
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9147.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9364.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9499.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9549.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9846.xml"/>
       </references>
       <references>
         <name>Informative References</name>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.7858.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.8484.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9001.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9102.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9156.xml"/>
+        <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9250.xml"/>
         <reference anchor="SRVREG" target="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.txt">
           <front>
             <title>Service Name and Transport Protocol Port Number Registry</title>
