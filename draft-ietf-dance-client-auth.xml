@@ -71,9 +71,10 @@
     <keyword>Raw Public Key</keyword>
 
     <abstract>
-      <t>The DANE TLSA protocol
+      <t>The DNS-Based Authentication of Named Entities (DANE) protocol
       describes how to publish Transport Layer Security (TLS) server
-      certificates or public keys in the DNS. This document
+      certificates or public keys in the DNS, using the TLSA resource
+      record. This document
       describes how to use the TLSA record to publish
       client certificates or public keys, and also the rules and
       considerations for using them with TLS. In addition, it defines
@@ -93,9 +94,10 @@
         <xref target="RFC9147" format="default"/> protocols optionally support the authentication
         of clients using <xref target="RFC5280" format="default">X.509 certificates</xref> or
 	<xref target="RFC7250" format="default">raw public keys</xref>. TLS applications
-	that perform DANE <xref target="RFC6698"/> <xref target="RFC7671"/>
-        authentication of servers using TLSA records
-	may also desire to authenticate clients using the same mechanism,
+	that use DNS-Based Authentication of Named Entities (DANE)
+	<xref target="RFC6698"/> <xref target="RFC7671"/> to authenticate
+	servers via DNS TLSA records may also desire to authenticate
+	clients using the same mechanism,
 	especially if the client identity is in the form of or can be
 	represented by a DNS domain name. Some design patterns from the
 	Internet of Things (IoT) plan to make use of this form of
