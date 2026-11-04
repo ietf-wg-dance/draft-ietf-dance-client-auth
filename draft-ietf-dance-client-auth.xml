@@ -109,8 +109,8 @@
       <t>
 	In this document, the term TLS is used generically to describe
 	both the TLS and DTLS (Datagram Transport Layer Security) protocols.
-        The protocol changes described can also be used with QUIC, since QUIC
-        re-uses the TLS handshake <xref target="RFC9001" format="default"/>.
+        The protocol changes described can also be used with versions of
+        QUIC whose handshake uses TLS <xref target="RFC9001" format="default"/>.
       </t>
       <t>
         This specification requires TLS 1.3 <xref target="RFC9846"/> or
@@ -529,8 +529,10 @@ opaque ClientName<0..2^8-1>;
           client did not send the extension at all, it has not requested
           DANE client authentication, and this specification does not apply
           to the connection. A server that supports DANE client
-          authentication alongside other modes (for example, traditional TLS
-          client authentication, or accepting unauthenticated clients) then
+          authentication alongside other modes (for example, TLS client
+          authentication using PKIX certificate validation
+          <xref target="RFC5280" format="default"/>, or accepting
+          unauthenticated clients) then
           handles the connection according to its general
           client-authentication policy; a server that requires DANE client
           authentication MUST abort the connection with a handshake_failure
