@@ -30,7 +30,7 @@
 
 <rfc xmlns:xi="http://www.w3.org/2001/XInclude"
         category="std" consensus="true"
-        docName="draft-ietf-dance-client-auth-16"
+        docName="draft-ietf-dance-client-auth-17"
         ipr="trust200902" obsoletes=""
         submissionType="IETF" xml:lang="en"
         tocInclude="true" tocDepth="4"
@@ -41,7 +41,7 @@
   <front>
 
     <title abbrev="TLSA client authentication">TLS Client Authentication via DANE TLSA records</title>
-    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-16"/>
+    <seriesInfo name="Internet-Draft" value="draft-ietf-dance-client-auth-17"/>
     <author fullname="Shumon Huque" initials="S." surname="Huque">
       <organization>Salesforce</organization>
       <address>
@@ -57,7 +57,7 @@
       </address>
     </author>
 
-    <date day="2" month="11" year="2026"/>
+    <date day="4" month="11" year="2026"/>
     <!-- Meta-data Declarations -->
 
     <area>General</area>
@@ -71,9 +71,10 @@
     <keyword>Raw Public Key</keyword>
 
     <abstract>
-      <t>The DANE TLSA protocol
+      <t>The DNS-Based Authentication of Named Entities (DANE) protocol
       describes how to publish Transport Layer Security (TLS) server
-      certificates or public keys in the DNS. This document
+      certificates or public keys in the DNS, using the TLSA resource
+      record. This document
       describes how to use the TLSA record to publish
       client certificates or public keys, and also the rules and
       considerations for using them with TLS. In addition, it defines
@@ -93,9 +94,10 @@
         <xref target="RFC9147" format="default"/> protocols optionally support the authentication
         of clients using <xref target="RFC5280" format="default">X.509 certificates</xref> or
 	<xref target="RFC7250" format="default">raw public keys</xref>. TLS applications
-	that perform DANE <xref target="RFC6698"/> <xref target="RFC7671"/>
-        authentication of servers using TLSA records
-	may also desire to authenticate clients using the same mechanism,
+	that use DNS-Based Authentication of Named Entities (DANE)
+	<xref target="RFC6698"/> <xref target="RFC7671"/> to authenticate
+	servers via DNS TLSA records may also desire to authenticate
+	clients using the same mechanism,
 	especially if the client identity is in the form of or can be
 	represented by a DNS domain name. Some design patterns from the
 	Internet of Things (IoT) plan to make use of this form of
@@ -107,8 +109,8 @@
       <t>
 	In this document, the term TLS is used generically to describe
 	both the TLS and DTLS (Datagram Transport Layer Security) protocols.
-        The protocol changes described can also be used with QUIC, since QUIC
-        re-uses the TLS handshake <xref target="RFC9001" format="default"/>.
+        The protocol changes described can also be used with versions of
+        QUIC whose handshake uses TLS <xref target="RFC9001" format="default"/>.
       </t>
       <t>
         This specification requires TLS 1.3 <xref target="RFC9846"/> or
@@ -258,7 +260,7 @@
     </section>
 
     <section numbered="true" toc="default">
-      <name>Example TLSA Records for Clients</name>
+      <name>Examples of TLSA Records for Clients</name>
       <t>
 	The following examples are provided in the textual presentation
 	format of the DNS TLSA record.
@@ -267,7 +269,7 @@
       <section numbered="true" toc="default">
         <name>Format 1: Service Specific Client Identity</name>
         <t>
-	  An example TLSA record for the client "device1.example.com." and
+	  An example TLSA record for the client "mta1.example.com." and
 	  the application service "smtp". This record specifies the SHA-256 hash
 	  of the subject public key component of the end-entity certificate
 	  corresponding to the client. The certificate usage for this record
@@ -276,7 +278,7 @@
         </t>
         <artwork name="" type="" align="left" alt=""><![CDATA[
 
-_smtp._client.device1.example.com. IN TLSA (
+_smtp._client.mta1.example.com. IN TLSA (
    3 1 1 d2abde240d7cd3ee6b4b28c54df034b9
          7983a1d16e8a410e4561cb106618e971 )
   	]]></artwork>
@@ -527,8 +529,10 @@ opaque ClientName<0..2^8-1>;
           client did not send the extension at all, it has not requested
           DANE client authentication, and this specification does not apply
           to the connection. A server that supports DANE client
-          authentication alongside other modes (for example, traditional TLS
-          client authentication, or accepting unauthenticated clients) then
+          authentication alongside other modes (for example, TLS client
+          authentication using PKIX certificate validation
+          <xref target="RFC5280" format="default"/>, or accepting
+          unauthenticated clients) then
           handles the connection according to its general
           client-authentication policy; a server that requires DANE client
           authentication MUST abort the connection with a handshake_failure
@@ -536,7 +540,8 @@ opaque ClientName<0..2^8-1>;
         <li>If the server applies name-based authorization rules (see
           below), it SHOULD first check the client's domain name against
           them, and reject a name that is not permitted without performing
-          the lookup. Otherwise, look up the TLSA record set in the DNS, using the client's
+          the lookup, to avoid unnecessary DNS queries. If the name is permitted, or no such rules apply, look
+          up the TLSA record set in the DNS, using the client's
 	  domain name obtained in the previous step directly as the DNS
 	  query name. The response MUST be
 	  cryptographically validated using DNSSEC. The server could
@@ -565,8 +570,11 @@ opaque ClientName<0..2^8-1>;
           policy allows.</li>
         <li>If there are multiple records in the TLSA record set,
 	  then the client is authenticated as long as at least one of
-	  the TLSA records matches, subject to <xref target="RFC7671" format="default"/> digest agility,
-	  which SHOULD be implemented.</li>
+	  the TLSA records matches, subject to the digest algorithm agility of
+	  <xref target="RFC7671" section="9" sectionFormat="of"/>, which, as in
+	  that specification, SHOULD be implemented. Without it, a server may
+	  accept a client key matching only a weaker digest published alongside
+	  a stronger one.</li>
       </ol>
       <t>
 	When the client's name is expected to appear in the certificate,
@@ -822,7 +830,9 @@ opaque ClientName<0..2^8-1>;
       <section anchor="iana_tls" numbered="true" toc="default">
       <name>TLS ExtensionType Value</name>
       <t>
-        IANA is requested to create the following entry in the "TLS ExtensionType Values" registry:
+        IANA is requested to create the following entry in the "TLS
+        ExtensionType Values" registry under the "Transport Layer Security
+        (TLS) Extensions" registry group <xref target="IANA-TLS" format="default"/>:
       </t>
       <t>
         Extension Name "dane_clientid" with value TBD, "TLS 1.3" column values set to "CR, CT", "DTLS-Only" column set to "N", "Recommended" column set to "N", and "Comment" column set to "For TLS 1.3 or later".
@@ -837,7 +847,9 @@ opaque ClientName<0..2^8-1>;
       <t>
         IANA is requested to add the following entries to the "Underscored
         and Globally Scoped DNS Node Names" registry
-        <xref target="RFC8552" format="default"/>:
+        <xref target="RFC8552" format="default"/> under the "Domain Name
+        System (DNS) Parameters" registry group
+        <xref target="IANA-DNS" format="default"/>:
       </t>
       <table align="left">
         <thead>
@@ -883,6 +895,18 @@ opaque ClientName<0..2^8-1>;
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9102.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9156.xml"/>
         <xi:include href="https://xml2rfc.tools.ietf.org/public/rfc/bibxml/reference.RFC.9250.xml"/>
+        <reference anchor="IANA-DNS" target="https://www.iana.org/assignments/dns-parameters">
+          <front>
+            <title>Domain Name System (DNS) Parameters</title>
+            <author fullname="IANA" surname="IANA"/>
+          </front>
+        </reference>
+        <reference anchor="IANA-TLS" target="https://www.iana.org/assignments/tls-extensiontype-values">
+          <front>
+            <title>Transport Layer Security (TLS) Extensions</title>
+            <author fullname="IANA" surname="IANA"/>
+          </front>
+        </reference>
         <reference anchor="SRVREG" target="https://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.txt">
           <front>
             <title>Service Name and Transport Protocol Port Number Registry</title>
